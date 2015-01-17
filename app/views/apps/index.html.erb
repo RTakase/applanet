@@ -1,10 +1,24 @@
 <h1> 似ているアンドロイドアプリを探しましょう（セカンドプロトタイプ）。</h1>
-<h1>
-  <%= form_tag('/apps/index') do %>
-  <%= text_field_tag :appname %>
-  <%= submit_tag "検索" %>
-  <% end %>
-</h1>
+
+<%= form_tag('/apps/index') do %>
+<%= text_field_tag :appname %>
+<%= submit_tag "検索" %>
+<br><br>
+「似ている」の基準（複数可）
+<br>
+<!-- check_box(オブジェクト名, プロパティ名 [, オプション, checked_value = "1", unchecked_value = "0"]) -->
+<% op = Hash.new %>
+<% op["disabled"] = true %>
+<%= check_box(:chars, :title) %> タイトル
+<%= check_box(:chars, :icon) %> アイコン
+<%= check_box(:chars, :description, op) %> 説明文
+<%= check_box(:chars, :ratecuont, op) %> レビューの数数
+<%= check_box(:chars, :rateaverage, op) %> レビューの星の数
+<%= check_box(:chars, :simapps, op) %> 類似のアプリ
+<% end %>
+<br>
+
+<%= @status %>
 
 <% case @status %>
 <% when 0 %>
@@ -21,11 +35,9 @@
 <% end %>
 
 <br><br>
-<% @dis.each do |key, value| %>
-<%= key %>
-=>
-<%= value %>
-<br>
+
+<% @similarity.each do |key, value| %>
+<%= key %> : <%= value %> <br>
 <% end %>
 
 <% when 1 %>

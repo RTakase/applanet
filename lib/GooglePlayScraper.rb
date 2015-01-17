@@ -71,7 +71,7 @@ class GooglePlayScraper
     @app["description"] = getAppDesc
     @app["rateaverage"] = getAppRateAve
     @app["ratecount"] = getAppRateCnt
-    #@app["simapps"] = getSimApps
+    @app["simapps"] = getSimApps
     @app["category"] = getAppCategory
     @app["developer"] = getAppDeveloper
     

@@ -16,6 +16,9 @@ class AppsController < ApplicationController
         @errMessage = ""
         @appDetails = Hash.new
 
+        #チェックされている特徴量を抽出
+        char = params[:chars].keep_if { value = "1" }
+
         #半角空白で区切って配列に
         query = params[:appname].split(" ")
         
@@ -25,19 +28,18 @@ class AppsController < ApplicationController
         #スクレイピング結果
         @app = GooglePlayScraper.new(url).app 
 
-        @dis = Hash.new
-        #入力されたアプリとDB中の全アプリとの間でタイトルの編集距離を計算
-        AndroidApp.all.each do |other|
-          @dis[other["title"]] = 
-            Levenshtein.distance(@app["title"], other["title"])
+        #あるアプリに対する入力アプリとの距離
+        @similarity = Hash.new
+
+        #入力されたアプリとDB中の全アプリとの間で距離を計算
+        AndroidApp.all.each do |target|
+                      
+          @similarity[target["packageid"]] = 
+            calcDistance(char.keys, @app, target)
         end
 
-        @dis = @dis.sort_by do |key, value|
-          value
-        end
-        
         @status = 2
-
+        
       rescue OpenURI::HTTPError => ex.message
         @errMessage = ex.message
         @status = 1
@@ -49,5 +51,24 @@ class AppsController < ApplicationController
         @status = 1
       end
     end
+  end
+
+  def calcDistance(keys, input, target)
+
+    keys.collect do |key|
+      case key
+      when "title"
+        calcEditDistance(input, target)
+      when "icon"
+        0
+      end
+    end
+
+  end
+
+  def calcEditDistance(input, target)
+
+    Levenshtein.distance(@app["title"], target["title"])
+
   end
 end
