@@ -155,9 +155,13 @@ class GooglePlayScraper
 
     tmp = nil
 
+    puts "by takase, " + "1"
+
     #「類似のアプリ」と「このデベロッパーの他のアプリ」からなる長さ2のノードセット
     nodeset = @webPage
       .xpath("//div[@class='rec-cluster']")
+
+    puts "by takase, " + "2"
 
     #divの日本語のタイトルでどちらが「類似のアプリ」であるかを判断
     nodeset.each do |node|
@@ -166,7 +170,8 @@ class GooglePlayScraper
         break;
       end
     end
-    
+
+    puts "by takase, " + "3"    
     packageIds = []
 
     #1類似のアプリのパッケージID1ノードなリノードセット
@@ -178,6 +183,8 @@ class GooglePlayScraper
     nodeset.each do |node|      
       packageIds.push(node.value)
     end
+
+    puts "by takase, " + "1"
 
     return packageIds
 
