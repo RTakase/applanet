@@ -16,6 +16,11 @@
 <br>
 <h2> アプリ：<%= @app["title"] %></h2>
 
+<% @app.each do |key, value| %>
+<%= key %> : <%= value %> <br>
+<% end %>
+
+<br><br>
 <% @dis.each do |key, value| %>
 <%= key %>
 =>
