@@ -5,7 +5,6 @@ require "pp"
 
 class GooglePlayScraper
 
-  @lang
   @similarAppsRep　#「類似のアプリ」の表現
   @webPage #スクレイプするhtml
 
@@ -14,40 +13,38 @@ class GooglePlayScraper
   attr_reader :app
 
   #コンストラクタ
-  def initialize(source, lang="ja")
+  def initialize(source)
 
     #***** 初期設定 *****#
-    @lang = lang
 
     @app = Hash.new
-
-    case @lang
-    when "ja"
-      @similarAppsRep = "類似のアイテム"
-    else 
-      @similarAppsRep = nil
-    end
-    
+   
     #変数sourceはurlかパッケージIDのどちらか。
     #それぞれの場合においてurlとpackageIdを設定する
-    if source.include?("http") 
-      url = source
-      #urlからクエリ部分を抜き出し、パッケージIDを見つける
-      URI.parse(source).query.split("&").each do |q|
-        #キーとバリューのセット
-        tuple = q.split("=")
-        #キーがidなら、その値をパッケージIDにセット
-        if (tuple[0] == "id") 
-          @app["packageid"] = tuple[1]
-          end
+    if source.match(/http(s)?:\/\/.*?$/)       
+      #urlを分解
+      parsed = URI.parse(source)
+
+      #クエリに対してhl=jaを追加
+      if md = parsed.query.match(/hl=(.*)/)
+        #その設定値がjaじゃなければjaに変更
+        parsed.query[md[1]] = "ja" unless md[1] == "ja"
+      else 
+        parsed.query += "&hl=ja"       
       end
+      
+      #部品でurlを再構築
+      url = parsed.to_s
+
+      #クエリからパッケージIDを抜き出す
+      if md = parsed.query.match(/id=(.*)/)
+        @app["packageid"] = md[1]
+      end      
     else
       url = 
-        "https://play.google.com/store/apps/details?id=%s&hl=%s" % [source, @lang]
+        "https://play.google.com/store/apps/details?id=%s&hl=ja" % source
       @app["packageid"] = source
     end
-    
-    puts "by takase, " + url
 
     #***** URLを読み込んでhtmlを返却 *****#
     charset = ""
@@ -74,7 +71,6 @@ class GooglePlayScraper
     @app["simapps"] = getSimApps
     @app["category"] = getAppCategory
     @app["developer"] = getAppDeveloper
-    
     
   end
   
@@ -153,36 +149,28 @@ class GooglePlayScraper
   #戻り値：文字列(パッケージID)の配列
   def getSimApps
 
-    tmp = nil
+    similarAppsRep = "類似のアイテム"
 
     #「類似のアプリ」と「このデベロッパーの他のアプリ」からなる長さ2のノードセット
     nodeset = @webPage
       .xpath("//div[@class='rec-cluster']")
 
     #divの日本語のタイトルでどちらが「類似のアプリ」であるかを判断
-    nodeset.each do |node|
-      puts "by takase, " + node.xpath("h1").inner_text
-      puts "by takase, " + @similarAppsRep
-      if (node.xpath("h1").inner_text == @similarAppsRep)
-        tmp = node
-        break;
-      end
+    node = nodeset.each do |node|
+      break node if node.xpath("h1").inner_text == similarAppsRep
     end
-
+    
     packageIds = []
 
     #1類似のアプリのパッケージID1ノードなリノードセット
-    nodeset = tmp
+    nodeset = node
       .xpath("div[@class='cards expandable']")
       .children
       .xpath("@data-docid")
 
-    nodeset.each do |node|      
-      packageIds.push(node.value)
+    simapps = nodeset.collect do |node|      
+      node.value
     end
-
-    return packageIds
-
   end
 
   #アプリのカテゴリを取得
