@@ -1,24 +1,26 @@
 <h1> 似ているアンドロイドアプリを探しましょう（セカンドプロトタイプ）。</h1>
 
 <%= form_tag('/apps/index') do %>
-<%= text_field_tag :appname %>
-<%= submit_tag "検索" %>
-<br><br>
-「似ている」の基準（複数可）
-<br>
-<!-- check_box(オブジェクト名, プロパティ名 [, オプション, checked_value = "1", unchecked_value = "0"]) -->
-<% op = Hash.new %>
-<% op["disabled"] = true %>
-<%= check_box(:chars, :title) %> タイトル
-<%= check_box(:chars, :icon) %> アイコン
-<%= check_box(:chars, :description, op) %> 説明文
-<%= check_box(:chars, :ratecuont, op) %> レビューの数数
-<%= check_box(:chars, :rateaverage, op) %> レビューの星の数
-<%= check_box(:chars, :simapps, op) %> 類似のアプリ
+  <%= text_field_tag(:name, @appname, placeholder: "e.g. angry bird") %>
+  <%= submit_tag "検索" %>
+  <br><br>
+  「似ている」の基準（複数可）
+  <br>
+
+  <% @charInfo.each do |key, value| %>
+    <% op = Hash.new %>
+    <% op["checked"] = true if @checked.include?(key) %>
+    <% op["disabled"] = true if @showOnly.include?(key) %>
+    <%= check_box(:appchar, key, op) %>
+    <%= value %>
+  <% end %>
 <% end %>
 <br>
 
-<%= @status %>
+<!-- free space -->
+
+<!--            -->
+
 
 <% case @status %>
 <% when 0 %>
@@ -30,14 +32,8 @@
 <br>
 <h2> アプリ：<%= @app["title"] %></h2>
 
-<% @app.each do |key, value| %>
-<%= key %> : <%= value %> <br>
-<% end %>
-
-<br><br>
-
 <% @similarity.each do |key, value| %>
-<%= key %> : <%= value %> <br>
+  <%= key %> : <%= value %> <br>
 <% end %>
 
 <% when 1 %>

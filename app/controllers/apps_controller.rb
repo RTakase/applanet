@@ -8,34 +8,58 @@ class AppsController < ApplicationController
 
   def index
 
+    #特徴量の識別子とその日本語表現
+    @charInfo = Hash.new
+    @charInfo["title"] = "タイトル"
+    @charInfo["icon"] = "アイコン"
+    @charInfo["description"] = "説明文"
+    @charInfo["ratecount"] = "レビュー数"
+    @charInfo["rateaverage"] = "星の数"
+    @charInfo["simapps"] = "類似のアプリ"
+
+    #未実装の特徴量
+    @showOnly = 
+      ["description", "ratecount", "rateaverage", "simapps"]
+
+    #ウェブページの状態（0：初期　1：エラー　2：成功）
     @status = 0
 
-    unless params[:appname].blank?
+    #チェックされている特徴量
+    @checked = Array.new
+    #チェックされている特徴量を抽出
+    if params[:appchar] 
+      params[:appchar].to_hash.keep_if do |k, v|        
+        @checked.push(k) if v == "1"
+      end 
+    end
+    @checked.push("title") if @checked.empty?
+
+    #入力されたアプリ名(なんでparams[:name]は配列なの・・・）
+    @appname = params[:name].to_s
+
+    #あるアプリに対する入力アプリとの距離
+    @similarity = Hash.new
+
+    unless @appname.blank?
 
       begin 
         @errMessage = ""
         @appDetails = Hash.new
 
-        #チェックされている特徴量を抽出
-        char = params[:chars].keep_if { value = "1" }
-
         #半角空白で区切って配列に
-        query = params[:appname].split(" ")
+        query = @appname.split(" ")
         
         #入力されたアプリのGoogle Play url
         url = GoogleSearchScraper.new(query).url
 
         #スクレイピング結果
-        @app = GooglePlayScraper.new(url).app 
-
-        #あるアプリに対する入力アプリとの距離
-        @similarity = Hash.new
+        @app = GooglePlayScraper.new(url).app    
 
         #入力されたアプリとDB中の全アプリとの間で距離を計算
         AndroidApp.all.each do |target|
                       
           @similarity[target["packageid"]] = 
-            calcDistance(char.keys, @app, target)
+            calcDistance(@checked, @app, target)
         end
 
         @status = 2
