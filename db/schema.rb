@@ -20,6 +20,7 @@ ActiveRecord::Schema.define(version: 20150116122127) do
     t.string   "packageid"
     t.string   "title"
     t.string   "iconurl"
+    t.string   "avehash"
     t.string   "category"
     t.string   "developer"
     t.string   "simapps",     array: true

@@ -44,3 +44,5 @@ gem 'rails_12factor', '0.0.2'
 
 gem 'levenshtein'
 
+gem 'rmagick'
+

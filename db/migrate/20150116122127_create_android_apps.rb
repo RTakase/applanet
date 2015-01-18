@@ -5,6 +5,7 @@ class CreateAndroidApps < ActiveRecord::Migration
       t.string :packageid
       t.string  :title
       t.string :iconurl
+      t.string :avehash
       t.string :category
       t.string :developer
       t.string :simapps, array:true

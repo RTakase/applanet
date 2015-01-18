@@ -16,11 +16,13 @@ namespace :dbmanage do
 
         require "GoogleSearchScraper"
         require "GooglePlayScraper"
+        require "ImageHandler"
         
         #タスク実行時の引数を取得（なにもない場合はアングリーバード）
         packageId = args.targetId
         #packageId = "com.rovio.angrybirds" if packageId.blank?
         packageId = "jp.gungho.pad" if packageId.blank?
+
         callerIds = args.callerIds
         callerIds = [] if callerIds.blank?
 
@@ -44,6 +46,10 @@ namespace :dbmanage do
 
           #スクレイピング
           app = GooglePlayScraper.new(packageId).app
+
+          #average hash を計算して追加
+          ih = ImageHandler.new(app["iconurl"])
+          app["avehash"] = ih.calcAverageHash
 
           #登録
           newone = AndroidApp.new(app)

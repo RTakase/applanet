@@ -2,6 +2,7 @@
 
 require "./lib/GooglePlayScraper" 
 require "./lib/GoogleSearchScraper" 
+require "./lib/ImageHandler"
 require 'levenshtein' #編集距離を計算してくれる
 
 class AppsController < ApplicationController
@@ -38,13 +39,12 @@ class AppsController < ApplicationController
     @appname = params[:name].to_s
 
     #あるアプリに対する入力アプリとの距離
-    @similarity = Hash.new
+    @similarity = Hash.new if @similarity.blank?
 
     unless @appname.blank?
 
       begin 
         @errMessage = ""
-        @appDetails = Hash.new
 
         #半角空白で区切って配列に
         query = @appname.split(" ")
@@ -55,13 +55,32 @@ class AppsController < ApplicationController
         #スクレイピング結果
         @app = GooglePlayScraper.new(url).app    
 
-        #入力されたアプリとDB中の全アプリとの間で距離を計算
-        AndroidApp.all.each do |target|
-                      
-          @similarity[target["packageid"]] = 
-            calcDistance(@checked, @app, target)
-        end
+        ih = ImageHandler.new(@app["iconurl"])
+        @app["avehash"] = ih.calcAverageHash
 
+        #チェックされた特徴量でループ
+        @checked.each do |char|
+          
+          activeChar = calcCharacteristics(char, @app)
+          
+          #DB中の全アプリでループ
+          AndroidApp.all.each do |target|
+
+            packageId = target["packageid"]           
+
+            if @similarity[packageId].blank?
+              @similarity[packageId] = Hash.new
+            end   
+
+            next unless @similarity[packageId][char].blank?
+
+            passiveChar = calcCharacteristics(char, target)
+
+            @similarity[packageId][char] =
+              calcSimilarity(char, activeChar, passiveChar)
+          end
+        end
+        
         @status = 2
         
       rescue OpenURI::HTTPError => ex.message
@@ -73,26 +92,37 @@ class AppsController < ApplicationController
       rescue NoKeywordError => ex
         @errMessage = ex.message      
         @status = 1
+        # rescue => ex
+        #   @errMessage = ex.message
+        #   @status = 1
       end
     end
   end
 
-  def calcDistance(keys, input, target)
+  def calcCharacteristics(char, target)
 
-    keys.collect do |key|
-      case key
-      when "title"
-        calcEditDistance(input, target)
-      when "icon"
-        0
-      end
+    case char
+    when "title"
+      target["title"]
+    when "icon"
+      target["avehash"]
     end
 
   end
 
-  def calcEditDistance(input, target)
+  def calcSimilarity(char, active, passive)
 
-    Levenshtein.distance(@app["title"], target["title"])
+    case char
+    when "title"
+      #magic number
+      max = 20
+      ashikiri = [Levenshtein.distance(active, passive), max]
+      (max - ashikiri.min).to_f / max
+    when "icon"
+      #magic number
+      max = 8 * 8
+      (max - Levenshtein.distance(active, passive)).to_f / max
+    end
 
   end
 end
