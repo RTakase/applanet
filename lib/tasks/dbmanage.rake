@@ -54,6 +54,7 @@ namespace :dbmanage do
           #登録
           newone = AndroidApp.new(app)
           newone.save
+          puts app["avehash"]
           puts "...was created."
 
           sims = app["simapps"]

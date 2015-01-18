@@ -62,29 +62,19 @@ class AppsController < ApplicationController
         
         #チェックされた特徴量でループ
         @checked.each do |char|
-          
-          logger.debug("1")
 
           activeChar = calcCharacteristics(char, @app)
-
-          logger.debug("2")
           
           #DB中の全アプリでループ
           AndroidApp.all.each do |target|
 
             packageId = target["packageid"]           
 
-            logger.debug("3")
-
             if @similarity[packageId].blank?
               @similarity[packageId] = Array.new
             end   
 
-          logger.debug("4")
-
             passiveChar = calcCharacteristics(char, target)
-
-            logger.debug("5")
 
             @similarity[packageId]
               .push(calcSimilarity(char, activeChar, passiveChar))
@@ -130,8 +120,7 @@ class AppsController < ApplicationController
 
   def calcSimilarity(char, active, passive)
 
-    logger.debug("6")
-
+    @hoge = ""
     case char
     when "title"
       #magic number
@@ -140,11 +129,8 @@ class AppsController < ApplicationController
       (max - ashikiri.min).to_f / max
     when "icon"
       #magic number
-      logger.debug("7")
       max = 8 * 8
-      logger.debug("8")
       (max - Levenshtein.distance(active, passive)).to_f / max
-      logger.debug("9")
     end
 
   end
