@@ -21,7 +21,8 @@ namespace :dbmanage do
         #タスク実行時の引数を取得（なにもない場合はアングリーバード）
         packageId = args.targetId
         #packageId = "com.rovio.angrybirds" if packageId.blank?
-        packageId = "jp.gungho.pad" if packageId.blank?
+        #packageId = "jp.gungho.pad" if packageId.blank?
+        packageId = "jp.co.lifebear" if packageId.blank?
 
         callerIds = args.callerIds
         callerIds = [] if callerIds.blank?

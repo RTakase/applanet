@@ -6,13 +6,14 @@ require "./lib/ImageHandler"
 require 'levenshtein' #編集距離を計算してくれる
 
 class AppsController < ApplicationController
-
+  
   def index
 
     #特徴量の識別子とその日本語表現
     @charInfo = Hash.new
     @charInfo["title"] = "タイトル"
-    @charInfo["icon"] = "アイコン"
+    @charInfo["icongeo"] = "アイコン（形ベース）"
+    @charInfo["iconcolor"] = "アイコン（色ベース）"
     @charInfo["description"] = "説明文"
     @charInfo["ratecount"] = "レビュー数"
     @charInfo["rateaverage"] = "星の数"
@@ -20,7 +21,7 @@ class AppsController < ApplicationController
 
     #未実装の特徴量
     @showOnly = 
-      ["description", "ratecount", "rateaverage", "simapps"]
+      ["iconcolor", "description", "ratecount", "rateaverage", "simapps"]
 
     #ウェブページの状態（0：初期　1：エラー　2：成功）
     @status = 0
@@ -39,13 +40,11 @@ class AppsController < ApplicationController
     @appname = params[:name].to_s
 
     #あるアプリに対する入力アプリとの距離
-    @similarity = Hash.new if @similarity.blank?
+    @similarity = Hash.new
 
     unless @appname.blank?
 
       begin 
-        @errMessage = ""
-
         #半角空白で区切って配列に
         query = @appname.split(" ")
         
@@ -59,7 +58,8 @@ class AppsController < ApplicationController
         ih = ImageHandler.new(@app["iconurl"])
         @app["avehash"] = ih.calcAverageHash
 
-        
+        @titleInDB = Hash.new
+
         #チェックされた特徴量でループ
         @checked.each do |char|
 
@@ -68,8 +68,10 @@ class AppsController < ApplicationController
           #DB中の全アプリでループ
           AndroidApp.all.each do |target|
 
-            packageId = target["packageid"]           
-
+            packageId = target["packageid"]    
+            
+            @titleInDB[packageId] = target["title"]
+            
             if @similarity[packageId].blank?
               @similarity[packageId] = Array.new
             end   
@@ -112,7 +114,7 @@ class AppsController < ApplicationController
     case char
     when "title"
       target["title"]
-    when "icon"
+    when "icongeo"
       target["avehash"]
     end
 
@@ -120,16 +122,13 @@ class AppsController < ApplicationController
 
   def calcSimilarity(char, active, passive)
 
-    @hoge = ""
     case char
     when "title"
-      #magic number
-      max = 30
+      max = 30      #magic number
       ashikiri = [Levenshtein.distance(active, passive), max]
       (max - ashikiri.min).to_f / max
-    when "icon"
-      #magic number
-      max = 8 * 8
+    when "icongeo"
+      max = 8 * 8      #magic number
       (max - Levenshtein.distance(active, passive)).to_f / max
     end
 
