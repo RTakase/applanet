@@ -8,7 +8,7 @@ namespace :dbmanage do
   desc "androidApp database manager"
   
   task :update, 
-    [:callerIds, :targetId] => :environment do |x, args|
+    [:targetId, :callerIds] => :environment do |x, args|
 
       begin
         # ログの出力を切る
@@ -74,7 +74,7 @@ namespace :dbmanage do
           sims.each do |sim|         
             #与えたい引数をrakeのtaskの引数形式に変換
             args = Rake::TaskArguments.new(
-              [:callerIds, :targetId], [callerIds, sim])
+              [:targetId, :callerIds], [sim, callerIds])
             Rake::Task["dbmanage:update"].execute(args)
           end
 
