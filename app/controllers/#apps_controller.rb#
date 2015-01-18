@@ -87,14 +87,6 @@ class AppsController < ApplicationController
           b = Math.sqrt(v2.inject(0.0) {|m, v| m += v*v })
           a <=> b
         end
-
-        @hoge = ""
-        #類似度を距離でソート(三平方の定理で距離を計算）
-        @similarity.each do |k1, v1|
-          ho = Math.sqrt(v1.inject(0.0) {|m, v| m += v*v })
-          @hoge += ho.to_s
-          @hoge += "\n"
-        end
         
         @status = 2
         
