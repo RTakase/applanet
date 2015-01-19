@@ -124,9 +124,12 @@ class AppsController < ApplicationController
 
     case char
     when "title"
-      max = 30      #magic number
-      ashikiri = [Levenshtein.distance(active, passive), max]
-      (max - ashikiri.min).to_f / max
+      dis = Levenshtein.distance(active, passive)
+      max = [active.length, passive.length].max
+      puts "dis = " + dis.to_s
+      puts "active l = " + active.length.to_s
+      puts "passive l = " + passive.length.to_s
+      (max - dis.to_f) / max
     when "icongeo"
       max = 8 * 8      #magic number
       (max - Levenshtein.distance(active, passive)).to_f / max
