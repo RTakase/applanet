@@ -2,7 +2,8 @@
 Rails.application.routes.draw do
   
   get 'apps/index'
-  post 'apps/index' => 'apps#index'
+  #~~~/apps/loadで呼び出されappsコントローラのloadメソッドを呼ぶため後半を省略
+  post 'apps/load'
 
   #herokuで開けるようにするため
   root  'apps#index'

@@ -46,3 +46,12 @@ gem 'levenshtein'
 
 gem 'rmagick'
 
+#gem 'jqplot-rails', :git => 'https://github.com/Guidecase/jqplot-rails.git'
+gem 'jqplot-rails'
+
+group :development do
+  gem 'better_errors'
+  gem 'binding_of_caller'
+  gem 'pry-byebug'        
+  gem 'pry-rails'
+end

@@ -1,7 +1,14 @@
+ <!DOCTYPE html>
+<html><body>
+
+<%#= javascript_include_tag "application" %>
+<%= stylesheet_link_tag "application" %>
+
 <h1> 似ているアンドロイドアプリを探しましょう（プロトタイプ）。</h1>
 ※「タイトル」による検索は、異なる言語間でうまく動作しません・・・
-
-<%= form_tag('/apps/index') do %>
+<%= form_tag('/apps/load', :remote => true) do %>
+<%#= form_tag('/apps/index', :remote => true) do %>
+  <%#= form_tag("/apps/index", :remote => true, :id => 'new_entry') do %>
   <%= text_field_tag(:name, @appname, placeholder: "e.g. angry bird") %>
   <%= submit_tag "検索" %>
   <br><br>
@@ -16,50 +23,51 @@
     <%= value %>
   <% end %>
 <% end %>
-<br>
 
 <!-- free space -->
-<!--           -->
-
+<%= @simapps.to_s %>
+<div id="msg">
+<h2> アプリの名前を入力してみてください！ </h2>
+</div>
+<div id="chart" style="height: 300px; width: 300px;"></div>
+<%#= Rails.application.config.assets.paths %>
+<!--       f   -->
 
 <% case @status %>
 <% when 0 %>
 
-<h1> アプリの名前を入力してみてください！ </h1>
 <% when 2 %>
-
+<% baseUrl = "https://play.google.com/store/apps/details?id=%s&hl=ja" %>
 <h1> 詳細を取得しました！ </h1>
 <br>
-<h2> アプリ：<%= @app["title"] %></h2>
+<h2>
+  アプリ：
+  <%= link_to(@app["title"], baseUrl % @app["packageid"])%>
+</h2>
 
-<!-- <%= javascript_tag do %> -->
-
-<!-- window.similarity = <%= raw @similarity.to_json %> -->
-<!-- window.appinfo = <%= raw @app.to_json %> -->
-
-<!--   <%= javascript_include_tag 'ex_jqplot' %> -->
-<!-- <% end %> -->
-
-
-<!-- <div id="chart1" style="height: 300px; width: 300px;"></div> -->
-
-<% baseUrl = "https://play.google.com/store/apps/details?id=%s&hl=ja" %>
-<% @similarity.each do |key, value| %>
-  <%= link_to(@titleInDB[key], baseUrl % key) %> 
-  : 
-  <%= "[ "%>
-  <% value.each do |v| %>
-    <%= "%1.3f" % v %>
-    <%= " " %>
-  <% end %>
-  ]
-  <br>
+<% plotData = Array.new %>
+<% @simapps.each do |simapp| %>
+  <%#= link_to(simapp["title"], baseUrl % simapp["packageid"]) %>
+  <%# simapp["similarity"].each do |v| %>
+    <%#= "%1.3f" % v %>
+    <%#= " " %>
+  <%# end %>
+  <% plotData = plotData.push(simapp["similarity"]) %>
 <% end %>
 
+<%#= javascript_include_tag "jquery.jqplot" %>
+
+<%= plotData %>
+<%#= jqplot(600, 600, [0.1,0.1],plotData, @plotOp) %>
+$."jqplot"
+<%= jqplot(600, 600, [[0.1,0.2,"hoge"], [0.222222222222222, 0.3,"hoge"]], @plotOp) %>
 <% when 1 %>
+
 <h1> 残念ながら・・・</h1>
 <p>
   <%= @errMessage %>
 </p>
 
 <% end %>
+
+</body></html>

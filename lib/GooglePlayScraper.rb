@@ -21,7 +21,7 @@ class GooglePlayScraper
    
     #変数sourceはurlかパッケージIDのどちらか。
     #それぞれの場合においてurlとpackageIdを設定する
-    if source.match(/http(s)?:\/\/.*?$/)       
+    if source.match(/http(s)?:\/\/.*$/)       
       #urlを分解
       parsed = URI.parse(source)
 
@@ -37,9 +37,11 @@ class GooglePlayScraper
       url = parsed.to_s
 
       #クエリからパッケージIDを抜き出す
-      if md = parsed.query.match(/id=(.*)/)
-        @app["packageid"] = md[1]
-      end      
+      parsed.query.split("&").each do |e|
+        if (md = e.match(/id=(.*)/))
+          @app["packageid"] = md[1]
+        end
+      end    
     else
       url = 
         "https://play.google.com/store/apps/details?id=%s&hl=ja" % source

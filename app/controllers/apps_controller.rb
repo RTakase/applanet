@@ -7,7 +7,7 @@ require 'levenshtein' #編集距離を計算してくれる
 
 class AppsController < ApplicationController
   
-  def index
+  def initialize
 
     #特徴量の識別子とその日本語表現
     @charInfo = Hash.new
@@ -23,12 +23,33 @@ class AppsController < ApplicationController
     @showOnly = 
       ["iconcolor", "description", "ratecount", "rateaverage", "simapps"]
 
-    #ウェブページの状態（0：初期　1：エラー　2：成功）
-    @status = 0
-
-    #チェックされている特徴量
     @checked = Array.new
+    @checked.push("title")
+
+    #グラフ生成時のオプション
+    @plotOp = Hash.new
+    @plotOp["title"] = "hoge"
+    @plotOp["Axes"] = {
+      show: true,
+      min: 0,
+      max: 10,
+    }
+    @plotOp["seriesDefaults"] = {
+      showLine: false,
+      #renderer: jQuery.jqplot.BubbleRenderer,
+    }
+    @plotOp["legend"] = {
+      show: true,
+      location: "ne"
+    }
+
+    super
+  end
+  
+  def load
+
     #チェックされている特徴量を抽出
+    @checked = Array.new
     if params[:appchar] 
       params[:appchar].to_hash.keep_if do |k, v|        
         @checked.push(k) if v == "1"
@@ -39,73 +60,76 @@ class AppsController < ApplicationController
     #入力されたアプリ名(なんでparams[:name]は配列なの・・・）
     @appname = params[:name].to_s
 
-    #あるアプリに対する入力アプリとの距離
-    @similarity = Hash.new
+    #DBから取り出すアプリ
+    @simapps = Array.new
 
-    unless @appname.blank?
+    begin 
+      #半角空白で区切って配列に
+      query = @appname.split(" ")
+      
+      #入力されたアプリのGoogle Play url
+      url = GoogleSearchScraper.new(query).url
 
-      begin 
-        #半角空白で区切って配列に
-        query = @appname.split(" ")
-        
-        #入力されたアプリのGoogle Play url
-        url = GoogleSearchScraper.new(query).url
+      #スクレイピング結果
+      @app = GooglePlayScraper.new(url).app    
 
-        #スクレイピング結果
-        @app = GooglePlayScraper.new(url).app    
+      #avehashを計算して追加
+      ih = ImageHandler.new(@app["iconurl"])
+      @app["avehash"] = ih.calcAverageHash
 
-        #avehashを計算して追加
-        ih = ImageHandler.new(@app["iconurl"])
-        @app["avehash"] = ih.calcAverageHash
-
-        @titleInDB = Hash.new
-
-        #チェックされた特徴量でループ
-        @checked.each do |char|
-
-          activeChar = calcCharacteristics(char, @app)
-          
-          #DB中の全アプリでループ
-          AndroidApp.all.each do |target|
-
-            packageId = target["packageid"]    
-            
-            @titleInDB[packageId] = target["title"]
-            
-            if @similarity[packageId].blank?
-              @similarity[packageId] = Array.new
-            end   
-
-            passiveChar = calcCharacteristics(char, target)
-
-            @similarity[packageId]
-              .push(calcSimilarity(char, activeChar, passiveChar))
-
-          end
-        end
-
-        #類似度を距離でソート(三平方の定理で距離を計算）
-        @similarity = @similarity.sort do |(k1, v1), (k2, v2)|
-          a = Math.sqrt(v1.inject(0.0) {|m, v| m += v*v })
-          b = Math.sqrt(v2.inject(0.0) {|m, v| m += v*v })
-          b <=> a
-        end
-        
-        @status = 2
-        
-      rescue OpenURI::HTTPError => ex.message
-        @errMessage = ex.message
-        @status = 1
-      rescue NoUrlError => ex
-        @errMessage = ex.message
-        @status = 1
-      rescue NoKeywordError => ex
-        @errMessage = ex.message      
-        @status = 1
-        # rescue => ex
-        #   @errMessage = ex.message
-        #   @status = 1
+      #入力アプリのチェックされた特徴量を予め計算
+      activeChar = Hash.new
+      @checked.each do |char|
+        activeChar[char] = calcCharacteristics(char, @app)
       end
+
+      #DB中の全アプリでループ
+      AndroidApp.all.each do |target|
+        
+        #viewで使うようのデータ
+        viewData = Hash.new
+        
+        viewData["title"] = target["title"]
+        viewData["packageid"] = target["packageid"]
+        viewData["similarity"] = Array.new
+
+        #チェックされた特徴量で類似度を算出
+        @checked.each do |char|
+          passiveChar = calcCharacteristics(char, target)
+          sim = calcSimilarity(char, activeChar[char], passiveChar)
+          viewData["similarity"].push(sim)          
+        end
+
+        # #1次元データの場合は２次元目にdummyとなる0をpush
+        # if @checked.length == 1
+        #   viewData["similarity"].push(0.0)
+        # end
+
+        @simapps.push(viewData)
+      end
+
+      #類似度を距離でソート(三平方の定理で距離を計算）
+      @simapps = @simapps.sort do |e1, e2|
+        a = Math.sqrt(e1["similarity"]
+            .inject(0.0){|m, v| m += v*v })
+        b = Math.sqrt(e2["similarity"]
+            .inject(0.0) {|m, v| m += v*v })
+        b <=> a
+      end
+
+      #magic number
+      #上位x件を抜き出し
+      @simapps = @simapps.values_at(0..10)
+
+    rescue OpenURI::HTTPError => ex.message
+      @message = ex.message
+    rescue NoUrlError => ex
+      @message = ex.message
+    rescue NoKeywordError => ex
+      @message = ex.message      
+      # rescue => ex
+      #   @message = ex.message
+      #   @status = 1
     end
   end
 
@@ -126,9 +150,6 @@ class AppsController < ApplicationController
     when "title"
       dis = Levenshtein.distance(active, passive)
       max = [active.length, passive.length].max
-      puts "dis = " + dis.to_s
-      puts "active l = " + active.length.to_s
-      puts "passive l = " + passive.length.to_s
       (max - dis.to_f) / max
     when "icongeo"
       max = 8 * 8      #magic number

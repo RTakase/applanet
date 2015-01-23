@@ -11,6 +11,14 @@
 // about supported directives.
 //
 //= require jquery
-//= require jquery_ujs
+//=require jquery_ujs
+//= require jqplot
+// require plugins/canvasAxisTickRenderer
+// require plugins/canvasAxisLabelRenderer
+// require plugins/canvasOverlay
+// require plugins/canvasTextRenderer
+// require plugins/enhancedLegendRenderer
+//= require jqplot/plugins/bubbleRenderer
+// require jqplot/plugins/pointLabels
 //= require turbolinks
 //= require_tree .
