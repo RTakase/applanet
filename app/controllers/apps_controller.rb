@@ -100,7 +100,7 @@ class AppsController < ApplicationController
 
       #magic number
       #上位x件を抜き出し
-      @simapps = @simapps.values_at(0..100)
+      @simapps = @simapps.values_at(0..30)
 
 
     rescue OpenURI::HTTPError => ex.message

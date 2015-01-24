@@ -33,7 +33,7 @@ plotOp.axesDefaults = {
     tickOptions: {
         formatString: '%0.2f',
     },
-    ticks: [-0.2,0,0.2,0.4,0.6,0.8,1.0],
+    //ticks: [-0.2,0,0.2,0.4,0.6,0.8,1.0],
 };
 plotOp.axes = {
     xaxis: {
@@ -43,12 +43,21 @@ plotOp.axes = {
         labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
         label: "<%= @checked.length >= 2 ? @charInfo[@checked[1]] : "" %>"
     }
-}
+};
+plotOp.cursor = {
+    show: true,
+    zoom: true,
+    showTooltip: false
+};
 
 //html中のid=chartなdivタグの中身をざくっと書き換える（てくれる）
 $("#chart").empty();
 var plot = $.jqplot("chart", [plotData], plotOp);
 $("#chart").show(); 
+$("#chart").off(); //紐付けられた全イベントを解除
+
+//拡大した際にはみ出たバブル達を隠す（jqplotに報告してあげようかな）
+$(".jqplot-series-canvas").css({overflow: "hidden"});
 
 //バブルがマウスオーバーされたときにアプリの名前のツールチップを表示する
 $('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {   
@@ -58,7 +67,7 @@ $('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, d
     var color = 'rgb(50%,50%,100%)';
 
     //ツールチップの位置を指定
-    $('.jqplot-highlighter-tooltip').css({left:x+radius+5, top:y-radius-5});
+    $('.jqplot-cursor-tooltip').css({left:x+radius+5, top:y-radius-5});
 
     //ツールチップの中身をアプリの名前（バブルチャートのラベル）に指定
     //data[4]は上のほうで勝手に設定したパッケージID
@@ -68,16 +77,25 @@ $('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, d
        title = "<%= simapp["title"] %>"
        } 
     <% end %>
-    $('.jqplot-highlighter-tooltip')
+    $('.jqplot-cursor-tooltip')
        .html('<span style="font-size:14px;font-weight:bold;color:'+color+';">'+title+'</span>');
 
-    $('.jqplot-highlighter-tooltip').show();
+    $('.jqplot-cursor-tooltip').show();
 });
 
 $('#chart').bind('jqplotDataUnhighlight', function (ev, seriesIndex, pointIndex, data) {
-    $('.jqplot-highlighter-tooltip').empty();
-    $('.jqplot-highlighter-tooltip').hide();
+    $('.jqplot-cursor-tooltip').empty();
+    $('.jqplot-cursor-tooltip').hide();
+});
 
+//バブルがクリックされたときにそのアプリのウェブページに飛ばす
+//
+$('#chart').bind('jqplotDataClick',　function (ev, seriesIndex, pointIndex, data) {
+    var url = "https://play.google.com/store/apps/details?id=" 
+    + data[4] 
+    + "&hl=ja";
+    //data[4]は上のほうで勝手に設定したパッケージID
+    window.open(url);
 });
 
 

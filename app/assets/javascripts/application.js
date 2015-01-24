@@ -13,7 +13,7 @@
 //= require jquery
 //=require jquery_ujs
 //= require jqplot
-//= require jqplot/plugins/highlighter
+// require jqplot/plugins/highlighter
 // require plugins/canvasAxisTickRenderer
 // require plugins/canvasAxisLabelRenderer
 // require plugins/canvasOverlay
