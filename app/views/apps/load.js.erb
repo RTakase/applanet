@@ -1,0 +1,87 @@
+
+//if (<%#= @simapps.empty? %>) ではなぜかうまく動かない・・・
+//グラフに表示するデータはあるか？
+<% if @simapps.empty? %>
+
+//グラフを非表示にする
+$("#chart").hide();
+//メッセージを更新
+$("#msg").html("<h2> <%= @message %> </h2>");
+
+<% else %>
+
+var plotData = [];
+//表示するデータから必要な部分を抜き取る
+<% @simapps.each_with_index do |simapp, i| %>;
+var data = <%= simapp["similarity"].collect {|e| 1.0 - e } %>; //座標
+if (data.length == 1) data.push(data[0]); //一次元のときのための補正
+data.push(<%= simapp["distance"] %>); //円のサイズ
+data.push("<%= i %>"); //ラベル
+data.push("<%= simapp["packageid"] %>"); //あとでタイトルとかと紐付けするためのパッケージID(jqplotの仕様外）
+plotData.push(data);
+<% end %>;
+
+var plotOp = {};
+plotOp.seriesDefaults = {
+    renderer: $.jqplot.BubbleRenderer,
+    rendererOptions: {
+        bubbleAlpha: 0.7,
+        varyBubbleColors: true,
+    }
+};
+plotOp.axesDefaults = {
+    tickOptions: {
+        formatString: '%0.2f',
+    },
+    ticks: [-0.2,0,0.2,0.4,0.6,0.8,1.0],
+};
+plotOp.axes = {
+    xaxis: {
+        label: "<%= @charInfo[@checked[0]] %>"
+    },
+    yaxis: {
+        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+        label: "<%= @checked.length >= 2 ? @charInfo[@checked[1]] : "" %>"
+    }
+}
+
+//html中のid=chartなdivタグの中身をざくっと書き換える（てくれる）
+$("#chart").empty();
+var plot = $.jqplot("chart", [plotData], plotOp);
+$("#chart").show(); 
+
+//バブルがマウスオーバーされたときにアプリの名前のツールチップを表示する
+$('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {   
+    //バブルの位置(data[0],data[1])をページ上の座標(x,y)に変換
+    var x = plot.axes.xaxis.u2p(data[0]);
+    var y = plot.axes.yaxis.u2p(data[1]);  // convert y axis units to pixels on grid
+    var color = 'rgb(50%,50%,100%)';
+
+    //ツールチップの位置を指定
+    $('.jqplot-highlighter-tooltip').css({left:x+radius+5, top:y-radius-5});
+
+    //ツールチップの中身をアプリの名前（バブルチャートのラベル）に指定
+    //data[4]は上のほうで勝手に設定したパッケージID
+    var title = "";
+     <% @simapps.each do |simapp| %>
+       if (data[4] == "<%= simapp["packageid"] %>") {
+       title = "<%= simapp["title"] %>"
+       } 
+    <% end %>
+    $('.jqplot-highlighter-tooltip')
+       .html('<span style="font-size:14px;font-weight:bold;color:'+color+';">'+title+'</span>');
+
+    $('.jqplot-highlighter-tooltip').show();
+});
+
+$('#chart').bind('jqplotDataUnhighlight', function (ev, seriesIndex, pointIndex, data) {
+    $('.jqplot-highlighter-tooltip').empty();
+    $('.jqplot-highlighter-tooltip').hide();
+
+});
+
+
+//部分テンプレートを呼び出す
+//コントローラ内のインスタンス変数がなぜかここでは取得できない・・・
+$("#msg").html("<%= j render(:partial => 'applink') %>");
+<% end %>
