@@ -26,23 +26,6 @@ class AppsController < ApplicationController
     @checked = Array.new
     @checked.push("title")
 
-    #グラフ生成時のオプション
-    @plotOp = Hash.new
-    @plotOp["title"] = "hoge"
-    @plotOp["Axes"] = {
-      show: true,
-      min: 0,
-      max: 10,
-    }
-    @plotOp["seriesDefaults"] = {
-      showLine: false,
-      #renderer: jQuery.jqplot.BubbleRenderer,
-    }
-    @plotOp["legend"] = {
-      show: true,
-      location: "ne"
-    }
-
     super
   end
   
@@ -97,14 +80,12 @@ class AppsController < ApplicationController
         @checked.each do |char|
           passiveChar = calcCharacteristics(char, target)
           sim = calcSimilarity(char, activeChar[char], passiveChar)
-          viewData["similarity"].push(sim)          
+          viewData["similarity"].push(sim)
         end
 
-        # #1次元データの場合は２次元目にdummyとなる0をpush
-        # if @checked.length == 1
-        #   viewData["similarity"].push(0.0)
-        # end
-
+        viewData["distance"] = Math.sqrt(
+          viewData["similarity"].inject(0.0) {|m, v| m += v*v }
+        )
         @simapps.push(viewData)
       end
 
@@ -119,7 +100,8 @@ class AppsController < ApplicationController
 
       #magic number
       #上位x件を抜き出し
-      @simapps = @simapps.values_at(0..10)
+      @simapps = @simapps.values_at(0..100)
+
 
     rescue OpenURI::HTTPError => ex.message
       @message = ex.message

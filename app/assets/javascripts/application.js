@@ -13,6 +13,7 @@
 //= require jquery
 //=require jquery_ujs
 //= require jqplot
+//= require jqplot/plugins/highlighter
 // require plugins/canvasAxisTickRenderer
 // require plugins/canvasAxisLabelRenderer
 // require plugins/canvasOverlay
@@ -20,5 +21,8 @@
 // require plugins/enhancedLegendRenderer
 //= require jqplot/plugins/bubbleRenderer
 // require jqplot/plugins/pointLabels
+//= require jqplot/plugins/cursor
+//= require jqplot/plugins/canvasAxisLabelRenderer
+//= require jqplot/plugins/canvasTextRenderer
 //= require turbolinks
 //= require_tree .
