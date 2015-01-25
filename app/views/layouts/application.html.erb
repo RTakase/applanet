@@ -1,14 +1,99 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Applanet</title>
-  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
-  <%= csrf_meta_tags %>
-</head>
-<body>
+<html lang="jp">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= content_for?(:title) ? yield(:title) : "Applanet" %></title>
+    <%= csrf_meta_tags %>
 
-<%= yield %>
+    <%= stylesheet_link_tag "application", :media => "all" %>
 
-</body>
+    <%= javascript_include_tag "application" %>
+  </head>
+  <body>
+
+    <div id="overall" class="accordion">
+
+      <div class="accordion-group">
+        <div class="accordion-heading heading" >
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#overall" href="#heading">Applanet</a>
+        </div>
+
+        <div class="accordion-body collapse in" id="heading">
+          <div class="accordion-inner">
+            <%= yield(:heading) %>
+          </div>
+        </div>
+      </div> <!-- overall-heading -->
+
+      <div class="accordion-group">
+        <div class="accordion-heading howto">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#overall" href="#howto">How To</a>
+        </div>
+
+        <div class="accordion-body collapse" id="howto">
+          <div class="accordion-inner">
+            <%= yield(:howto) %>
+          </div>
+        </div>
+      </div> <!-- overall-howto -->
+
+    <div class="accordion-group">
+        <div class="accordion-heading content">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#overall" href="#content">Contents</a>
+        </div>
+
+        <!-- ここのdivのclassにinをつければはじめから展開される -->
+        <div class="accordion-body collapse in" id="content">
+          <div class="accordion-inner">
+            <%= yield(:content) %>
+          </div>
+        </div>
+      </div> <!-- overall-content -->
+
+    <div class="accordion-group">
+      <div class="accordion-heading content">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#overall" href="#data">Data</a>
+      </div>
+
+      <!-- ここのdivのclassにinをつければはじめから展開される -->
+      <div class="accordion-body collapse" id="data">
+        <div class="accordion-inner">
+          <%= yield(:data) %>
+        </div>
+      </div>
+    </div> <!-- overall -->
+
+    <!--
+    <div class="navbar navbar-static-top">
+      <div class="container">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Applanet</a>
+        <div class="nav-collapse collapse navbar-responsive-collapse">
+          <ul class="nav navbar-nav">
+            <li><%= link_to "Link1", "/path1"  %></li>
+            <li><%= link_to "Link2", "/path2"  %></li>
+            <li><%= link_to "Link3", "/path3"  %></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+          <%#= bootstrap_flash %>
+
+
+      <footer>
+        <p>&copy; Company 2015</p>
+      </footer>
+
+    </div> 
+    -->
+
+
+  </body>
 </html>

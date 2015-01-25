@@ -68,7 +68,7 @@ namespace :dbmanage do
         callerIds.push(packageId)
 
         #呼び出しの階層が深くなり過ぎたらやめよう
-        if callerIds.length < 10
+        if callerIds.length < 3
 
           #類似のアプリに対して繰り返し
           sims.each do |sim|         

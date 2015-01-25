@@ -12,6 +12,7 @@
 //
 //= require jquery
 //=require jquery_ujs
+//= require twitter/bootstrap
 //= require jqplot
 // require jqplot/plugins/highlighter
 // require plugins/canvasAxisTickRenderer

@@ -1,0 +1,33 @@
+$(function(){
+    $("#input")
+        .on("ajax:beforeSend", function(){ alert("loading"); }) 
+        .on("ajax:success", function(){ alert("success"); }) 
+        .on("ajax:error", function(){ alert("error"); }) 
+        .on("ajax:complete", function(){ alert("complete"); });
+
+    //チェックボックス風トグルボタン達
+    var buttons = $("#char-togglebuttons").children();
+
+    //submit時にトグルボタンたちの状態をまとめて送信
+    $("#submit-btn")
+        .on("click", function() {
+
+            var res = "";
+            for (i = 0; i < buttons.length; i++) {
+                state = $(buttons[i]).attr("state");
+                if (state == "down") {
+                    res += $(buttons[i]).attr("name") + ","
+                }
+            }
+            //まとめた状態で上書き
+            $("#char-result").val(res);    
+        });
+
+    //チェックボックス風トグルボタン達にクリックイベントを紐付け
+    for (i = 0; i < buttons.length; i++) {
+        $(buttons[i]).on("click", function() {
+            val = $(this).attr("state");
+            $(this).attr("state", (val=="up") ? "down" : "up");
+        });
+    }
+});

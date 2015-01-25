@@ -1,0 +1,3 @@
+<% @simapps.each do |app| %>
+  <%= app["packageid"] %>
+<% end %>

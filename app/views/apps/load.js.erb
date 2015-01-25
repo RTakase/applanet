@@ -51,10 +51,12 @@ plotOp.cursor = {
 };
 
 //html中のid=chartなdivタグの中身をざくっと書き換える（てくれる）
-$("#chart").empty();
-var plot = $.jqplot("chart", [plotData], plotOp);
 $("#chart").show(); 
+$("#chart").empty();
 $("#chart").off(); //紐付けられた全イベントを解除
+var plot = $.jqplot("chart", [plotData], plotOp);
+
+
 
 //拡大した際にはみ出たバブル達を隠す（jqplotに報告してあげようかな）
 $(".jqplot-series-canvas").css({overflow: "hidden"});
@@ -102,4 +104,6 @@ $('#chart').bind('jqplotDataClick',　function (ev, seriesIndex, pointIndex, dat
 //部分テンプレートを呼び出す
 //コントローラ内のインスタンス変数がなぜかここでは取得できない・・・
 $("#msg").html("<%= j render(:partial => 'applink') %>");
+$("#appdata").html("<%= j render(:partial => 'data') %>");
+console.log(plot);
 <% end %>

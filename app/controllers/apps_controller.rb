@@ -5,10 +5,12 @@ require "./lib/GoogleSearchScraper"
 require "./lib/ImageHandler"
 require 'levenshtein' #編集距離を計算してくれる
 
-class AppsController < ApplicationController
-  
-  def initialize
+class NoCharError < StandardError
+end
 
+class AppsController < ApplicationController
+
+  def initialize
     #特徴量の識別子とその日本語表現
     @charInfo = Hash.new
     @charInfo["title"] = "タイトル"
@@ -19,34 +21,32 @@ class AppsController < ApplicationController
     @charInfo["rateaverage"] = "星の数"
     @charInfo["simapps"] = "類似のアプリ"
 
-    #未実装の特徴量
-    @showOnly = 
-      ["iconcolor", "description", "ratecount", "rateaverage", "simapps"]
-
-    @checked = Array.new
-    @checked.push("title")
-
+    #未実装な部分
+    @showOnly = Array.new
+    @showOnly = ["iconcolor", "description", "ratecount", "rateaverage", "simapps"]
     super
   end
-  
+
+  def error
+  end
+
   def load
-
-    #チェックされている特徴量を抽出
-    @checked = Array.new
-    if params[:appchar] 
-      params[:appchar].to_hash.keep_if do |k, v|        
-        @checked.push(k) if v == "1"
-      end 
-    end
-    @checked.push("title") if @checked.empty?
-
-    #入力されたアプリ名(なんでparams[:name]は配列なの・・・）
-    @appname = params[:name].to_s
-
-    #DBから取り出すアプリ
-    @simapps = Array.new
-
     begin 
+      @checked = Array.new
+      if params[:char].blank?
+        raise NoCharError
+          .new("基準はひとつ以上選んでください・・・");
+      else
+        #チェックされている特徴量を抽出
+        @checked = params[:char].split(",");       
+      end
+
+      #入力されたアプリ名(なんでparams[:name]は配列なの・・・）
+      @appname = params[:name].to_s
+
+      #DBから取り出すアプリ
+      @simapps = Array.new
+
       #半角空白で区切って配列に
       query = @appname.split(" ")
       
@@ -85,7 +85,7 @@ class AppsController < ApplicationController
 
         viewData["distance"] = Math.sqrt(
           viewData["similarity"].inject(0.0) {|m, v| m += v*v }
-        )
+          )
         @simapps.push(viewData)
       end
 
@@ -102,16 +102,21 @@ class AppsController < ApplicationController
       #上位x件を抜き出し
       @simapps = @simapps.values_at(0..30)
 
-
     rescue OpenURI::HTTPError => ex.message
       @message = ex.message
+      render action: :error
     rescue NoUrlError => ex
       @message = ex.message
+      render action: :error
     rescue NoKeywordError => ex
-      @message = ex.message      
-      # rescue => ex
-      #   @message = ex.message
-      #   @status = 1
+      @message = ex.message
+      render action: :error     
+    rescue NoCharError => ex
+      @message = ex.message
+      render action: :error   
+    rescue => ex
+      @message = "すみません何かがおかしいようです・・・"
+      render action: :error
     end
   end
 
@@ -135,7 +140,17 @@ class AppsController < ApplicationController
       (max - dis.to_f) / max
     when "icongeo"
       max = 8 * 8      #magic number
+      # actArr = active.split("")
+      # pasArr = passive.split("")
+      # res = 0
+      # for i in 0..max do
+      #   if actArr[i] != pasArr[i]
+      #     res += 1
+      #   end
+      # end
+      #(max - res).to_f / max
       (max - Levenshtein.distance(active, passive)).to_f / max
+
     end
 
   end

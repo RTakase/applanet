@@ -1,0 +1,9 @@
+<% @simapps.each do |app| %>
+  <%= app["packageid"] %>
+  =>
+  <% app["similarity"].each do |sim| %>
+    <%= sim %>
+    ,
+  <% end %>
+  <br>
+<% end %>

@@ -1,0 +1,13 @@
+<%= form_tag("apps/index", remote: true) do %>
+<%= text_field_tag(:name, :appname, placeholder: "e.g. angry bird") %>
+<%= submit_tag "ŒŸõ" %>
+<br><br>
+Ž—‚Ä‚¢‚é‚ÌŠî€i•¡”‰Âj
+<br>
+<input type="hidden" id="char-result" name="appchar" value="" />
+<div class="btn-group" data-toggle="buttons-checkbox">
+  <button type="button" class="btn btn-info" name="aiueo">‚ ‚¢‚¤‚¦‚¨</button>
+  <button type="button" class="btn btn-info" name="kakikukeko">‚©‚«‚­‚¯‚±</button>
+  <button type="button" class="btn btn-info" name="sasisuseso">‚³‚µ‚·‚¹‚»</button>
+</div>
+<button type="submit" class="btn btn-primary">submit</button>
