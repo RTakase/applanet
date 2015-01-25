@@ -54,7 +54,9 @@ plotOp.cursor = {
 $("#chart").show(); 
 $("#chart").empty();
 $("#chart").off(); //紐付けられた全イベントを解除
+$("#chart").height($("#chart").width());
 var plot = $.jqplot("chart", [plotData], plotOp);
+
 
 
 

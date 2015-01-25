@@ -19,37 +19,20 @@
 
 
 
-.accordion-heading.heading {
+.accordion-heading {
     font-size:200%; 
     text-align:left;
     padding-left:30px;
 }
 
-.accordion-body#heading>div {
-    font-size:100%; 
+.accordion-body {
     text-align:left;
     padding-left:30px;
     padding-top:10px;
     padding-bottom:10px;
     background-color:#DAE4F6;
 }
-.accordion-heading.howto {
-    font-size:200%; 
-    text-align:right;
-    padding-right:30px;
-}
-.accordion-body#howto>div {
-    font-size:100%; 
-    text-align:right;
-    padding-right:30px;
-    padding-top:10px;
-    padding-bottom:10px;
-    background-color:#DAE4F6;
-}
-.accordion-heading.content {
-    font-size:200%; 
-    text-align:center;
-}
+
 /* 子供にのみ！ */
 .accordion-body#content>div {
 }
@@ -59,11 +42,10 @@
 }
 
 #chart {
-    width:90%;
-    height:auto;
+    width:100%;
 }
 #char-togglebuttons * {
-    width:80%;
+    width:90%;
 }
 body {
     background-color:#dcdcdc
