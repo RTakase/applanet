@@ -1,26 +1,28 @@
 
 <%= form_tag("/apps/load", remote: true, id: "inputapp", class: "form-inline") do %>
-  <div class="form-group">
-  <input type="text" class="form-control" id="name" name="name" placeholder="e.g. angry bird"></input>
-  </div>
-  <input type="submit" class="btn btn-primary" id="submit_btn" name="commit" value="検索"></input>
-  <!-- ボタンの状態をイベントで管理した後まとめて送信するためのinput要素 -->
-  <input type="hidden" id="char-result" name="char" value=""></input>
+    <!-- テキストフィールドと検索ボタンを一行に収めるためのグループ -->
+    <div class="form-group">
+        <input type="text" class="form-control" name="name" placeholder="e.g. angry bird"></input>
+    </div>
+    <input type="submit" class="btn btn-primary" id="submit_btn" name="commit" value="検索"></input>
+    <input type="hidden" id="char-result" name="char" value=""></input>
 
 <% end %>
+
 <br>
+
 <div class="container" id="char-togglebuttons" data-toggle="buttons-checkbox">
-<% @charInfo.each do |key, value| %>
-  <button type="button"
-          <% if @showOnly.include?(key) %>
-            class="btn btn-info pull-left disabled"
-          <% else %>
-            class="btn btn-info pull-left"
-          <% end %>
-          state="up"
-          name= <%= key %>>
-    <%= value %>
-  </button>
-  <br>
-<% end %>
+    <% Applanet::Application.config.charInfo.each do |key, value| %>
+        <button type="button"
+                <% if Applanet::Application.config.showOnly.include?(key) %>
+                class="btn btn-info pull-left disabled"
+                <% else %>
+                class="btn btn-info pull-left"
+                <% end %>
+                state="up"
+                name= <%= key %>>
+                <%= value %>
+        </button>
+        <br>
+    <% end %>
 </div>

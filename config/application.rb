@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require File.expand_path('../boot', __FILE__)
 
 require 'rails/all'
@@ -19,5 +20,23 @@ module Applanet
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
+
+    #特徴量の識別子とその日本語表現
+    charInfo = Hash.new
+    charInfo["title"] = "タイトル"
+    charInfo["icongeo"] = "アイコン（形ベース）"
+    charInfo["iconcolor"] = "アイコン（色ベース）"
+    charInfo["description"] = "説明文"
+    charInfo["ratecount"] = "レビュー数"
+    charInfo["rateaverage"] = "星の数"
+    charInfo["simapps"] = "類似のアプリ"
+    config.charInfo = charInfo
+
+    #未実装な部分
+    showOnly = Array.new
+    showOnly = ["iconcolor", "description", "ratecount", "rateaverage", "simapps"]
+    config.showOnly = showOnly
+
+
   end
 end

@@ -15,14 +15,14 @@ class GoogleSearchScraper
   attr_reader :url
 
   #コンストラクタ
-  def initialize(keywords)
+  def initialize(query)
 
-    if (keywords.empty?)
+    if (query.empty?)
       raise NoKeywordError
-        .new("one more than keyword are needed!")
+        .new("キーワードを入力してください・・・");
     end
 
-    @url = extractFirstUrl(keywords)
+    @url = extractFirstUrl(query)
   end
 
   #以降の定義はprivate
@@ -44,9 +44,9 @@ class GoogleSearchScraper
   end
 
   #検索結果の中で最も上位に現れたtargetのURLを返却
-  def extractFirstUrl(keywords, target="play.google.com") 
+  def extractFirstUrl(query, target="play.google.com") 
 
-    url = makeUrl(keywords)
+    url = "http://www.google.com/search?num=100&ie=UTF-8&oe=UTF-8&hl=ja&q=%s" % CGI.escape(query)
 
     begin 
       charset = ""
@@ -58,14 +58,13 @@ class GoogleSearchScraper
     rescue OpenURI::HTTPError
       #URLの読み込み失敗
       raise OpenURI::TTPError 
-        .new("url is something worng!")
     end
 
     # htmlをXMLに変換
-    result = Nokogiri::HTML.parse(html, nil, charset)
+    document = Nokogiri::HTML.parse(html, nil, charset)
 
     #検索結果の一覧
-    records = result
+    records = document
       .xpath("//li[@class='g']")
 
     begin
@@ -77,7 +76,7 @@ class GoogleSearchScraper
           .xpath(".//a")
           .attribute("href")
           .value
-          .slice(/http.*$/) #先頭についている不要な文字を除去
+          .slice(/http.*$/) #先頭についている不要な部分を除去
 
         #ウェブサイト以外（"http"が含まれれていない）ならばスルー
         next unless link
@@ -95,8 +94,7 @@ class GoogleSearchScraper
     #ループの途中でreturnしなかったということは
     #検索結果に抽出対象のURLがなかったことを意味する
     raise NoUrlError
-      .new("such app was not found...")
-
+      .new("キーアプリを見つけられませんでした・・・")
   end
 
 end

@@ -5,8 +5,7 @@ require "pp"
 
 class GooglePlayScraper
 
-  @similarAppsRep　#「類似のアプリ」の表現
-  @webPage #スクレイプするhtml
+  @document #スクレイプするhtml
 
   #スクレイピングしたアプリ情報を格納するハッシュ
   @app
@@ -15,40 +14,10 @@ class GooglePlayScraper
   #コンストラクタ
   def initialize(source)
 
-    #***** 初期設定 *****#
-
     @app = Hash.new
-   
-    #変数sourceはurlかパッケージIDのどちらか。
-    #それぞれの場合においてurlとpackageIdを設定する
-    if source.match(/http(s)?:\/\/.*$/)       
-      #urlを分解
-      parsed = URI.parse(source)
+  
+    url, @app["packageid"] = convert(source)
 
-      #クエリに対してhl=jaを追加
-      if md = parsed.query.match(/hl=(.*)/)
-        #その設定値がjaじゃなければjaに変更
-        parsed.query[md[1]] = "ja" unless md[1] == "ja"
-      else 
-        parsed.query += "&hl=ja"       
-      end
-      
-      #部品でurlを再構築
-      url = parsed.to_s
-
-      #クエリからパッケージIDを抜き出す
-      parsed.query.split("&").each do |e|
-        if (md = e.match(/id=(.*)/))
-          @app["packageid"] = md[1]
-        end
-      end    
-    else
-      url = 
-        "https://play.google.com/store/apps/details?id=%s&hl=ja" % source
-      @app["packageid"] = source
-    end
-
-    #***** URLを読み込んでhtmlを返却 *****#
     charset = ""
     begin 
       html = open(url) do |data|
@@ -57,7 +26,7 @@ class GooglePlayScraper
       end
 
       # htmlをXMLに変換
-      @webPage = Nokogiri::HTML.parse(html, nil, charset)
+      @document = Nokogiri::HTML.parse(html, nil, charset)
 
     rescue OpenURI::HTTPError
       #URLの読み込み失敗
@@ -73,30 +42,57 @@ class GooglePlayScraper
     @app["simapps"] = getSimApps
     @app["category"] = getAppCategory
     @app["developer"] = getAppDeveloper
-    
   end
   
   #以降の定義はprivate
   private 
 
-  #アプリのタイトルを取得
-  #戻り値：文字列
-  def getAppTitle
+  ### 変数sourceはurlかパッケージIDのどちらか。
+  ### それぞれの場合においてurlとpackageIdを設定する
+  def convert(source)   
+    #source=urlな場合
+    if source.match(/http(s)?:\/\/.*$/)
+
+      parsed = URI.parse(source) #urlを分解
+
+      #クエリに対してhl=jaを追加
+      if md = parsed.query.match(/hl=(.*)/)
+        #設定値を強制的にjaに
+        #"abcde"["cd"] = "hoge" =>"abhogee"
+        parsed.query[md[1]] = "ja"
+      else 
+        parsed.query += "&hl=ja"       
+      end
+      
+      #部品でurlを再構築
+      url = parsed.to_s
+
+      #クエリからパッケージIDを抜き出す(.*?で最短マッチングを使用）
+      md = parsed.query.match(/id=(.*?)[$&]/)
+      pp md[0] + " " + md[1]
+      packageid = md[1]
+      
+      #source=packageidな場合
+    else
+      url = 
+        "https://play.google.com/store/apps/details?id=#{source}&hl=ja"
+      packageid = source
+    end
+
+    return url, packageid
+  end
     
-    #タイトルをスクレイピング
-    title = @webPage
+  #アプリのタイトルを取得
+  def getAppTitle
+    return @document
       .xpath("//div[@class='document-title']")
       .children
       .inner_text
-
   end
   
   #アプリのアイコンのURLを取得
-  #戻り値：文字列
   def getAppIconUrl
-
-    #アイコン画像のURLをスクレイピング
-    imageUrl = @webPage
+    return @document
       .xpath("//img[@alt='Cover art']")
       .first
       .attribute("src")
@@ -105,12 +101,10 @@ class GooglePlayScraper
   end
 
   #アプリの説明文を取得
-  #戻り値：文字列
   def getAppDesc
-
     #1行1ノードの説明文ノードセット
     nodeset = 
-      @webPage
+      @document
       .xpath("//div[@class='id-app-orig-desc']")
       .children
 
@@ -120,81 +114,57 @@ class GooglePlayScraper
     end
 
     return desc
-
   end
 
   #アプリの平均レートを取得
-  #戻り値：少数
   def getAppRateAve
-
-    rateAve = @webPage
+    return @document
       .xpath("//meta[@itemprop='ratingValue']")
       .attribute("content")
       .value
       .to_f
-
   end
 
   #アプリのレート数を取得
-  #戻り値：整数
   def getAppRateCnt
-
-    rateCount = @webPage
+    return @document
       .xpath("//meta[@itemprop='ratingCount']")
       .attribute("content")
       .value
       .to_i
-
   end
 
   #類似のアプリ一覧を取得
   #戻り値：文字列(パッケージID)の配列
   def getSimApps
-
     similarAppsRep = "類似のアイテム"
 
     #「類似のアプリ」と「このデベロッパーの他のアプリ」からなる長さ2のノードセット
-    nodeset = @webPage
-      .xpath("//div[@class='rec-cluster']")
-
-    #divの日本語のタイトルでどちらが「類似のアプリ」であるかを判断
-    node = nodeset.each do |node|
-      break node if node.xpath("h1").inner_text == similarAppsRep
-    end
-    
-    packageIds = []
-
-    #1類似のアプリのパッケージID1ノードなリノードセット
-    nodeset = node
-      .xpath("div[@class='cards expandable']")
-      .children
-      .xpath("@data-docid")
-
-    simapps = nodeset.collect do |node|      
-      node.value
+    @document.search(".rec-cluster").each do |cluster|
+      if cluster.search("h1").inner_text == similarAppsRep        
+        simapps = cluster.search(".card").collect do |card|
+          card.attribute("data-docid").value
+        end   
+        return simapps
+      end
     end
   end
-
+  
   #アプリのカテゴリを取得
   #戻り値：文字列
-  def getAppCategory
-    
-    category = @webPage
+  def getAppCategory    
+    category = @document
       .xpath("//span[@itemprop='genre']")
       .children
       .inner_text
-
   end
 
   #アプリの開発者を取得
   def getAppDeveloper
-
-    developer= @webPage
+    developer= @document
       .xpath("//span[@itemprop='name']")
       .children
       .inner_text
-
   end
 end
-#******************************************************#
 

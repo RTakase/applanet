@@ -1,111 +1,137 @@
 
-//if (<%#= @simapps.empty? %>) ではなぜかうまく動かない・・・
-//グラフに表示するデータはあるか？
-<% if @simapps.empty? %>
+var data = [];
 
-//グラフを非表示にする
-$("#chart").hide();
-//メッセージを更新
-$("#msg").html("<h2> <%= @message %> </h2>");
+var simapps = <%= @simapps.to_json.html_safe %>;
 
-<% else %>
+var charInfo = <%= Applanet::Application.config.charInfo.to_json.html_safe %>;
 
-var plotData = [];
+var checked = <%= @checked.to_json.html_safe %>
+
 //表示するデータから必要な部分を抜き取る
-<% @simapps.each_with_index do |simapp, i| %>;
-var data = <%= simapp["similarity"].collect {|e| 1.0 - e } %>; //座標
-if (data.length == 1) data.push(data[0]); //一次元のときのための補正
-data.push(<%= simapp["distance"] %>); //円のサイズ
-data.push("<%= i %>"); //ラベル
-data.push("<%= simapp["packageid"] %>"); //あとでタイトルとかと紐付けするためのパッケージID(jqplotの仕様外）
-plotData.push(data);
-<% end %>;
+for (i = 0; i < simapps.length; i++) {
+  var _data = [];
 
-var plotOp = {};
-plotOp.seriesDefaults = {
+  var sim = simapps[i].similarity;
+  for (j = 0; j < sim.length; j++) {
+    _data[j] = 1.0 - sim[j];
+  }
+
+  //一次元のときのための補正
+  if (_data.length == 1) _data.push(_data[0]);
+
+  //円のサイズ
+  _data.push(0.4 * simapps[i].distance);
+
+  //ラベル
+  _data.push(""+i);
+
+  //タイトルとかと紐付けするためのパッケージID(jqplotの仕様外）
+  _data.push(simapps[i].packageid);
+
+  data.push(_data);
+}
+
+var option = {
+  seriesDefaults: {
     renderer: $.jqplot.BubbleRenderer,
+    shadow: false,
     rendererOptions: {
-        bubbleAlpha: 0.7,
-        varyBubbleColors: true,
+      bubbleAlpha: 0.7,
+      varyBubbleColors: true,
+         showlabels: true
     }
-};
-plotOp.axesDefaults = {
+  },
+  axesDefaults: {
+    min: -0.1,
+    max: 1.1,
     tickOptions: {
-        formatString: '%0.2f',
+      formatString: '%0.2f',
     },
     //ticks: [-0.2,0,0.2,0.4,0.6,0.8,1.0],
-};
-plotOp.axes = {
+  },
+  axes: {
     xaxis: {
-        label: "<%= @charInfo[@checked[0]] %>"
+      label: ""
     },
     yaxis: {
-        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-        label: "<%= @checked.length >= 2 ? @charInfo[@checked[1]] : "" %>"
+      label: "",
+      labelRenderer: $.jqplot.CanvasAxisLabelRenderer
     }
-};
-plotOp.cursor = {
+  },
+  cursor: {
     show: true,
     zoom: true,
     showTooltip: false
+  }
 };
 
-//html中のid=chartなdivタグの中身をざくっと書き換える（てくれる）
-$("#chart").show(); 
+var label = [
+  option.axes.xaxis.label,
+  option.axes.yaxis.label
+];
+
+if (checked.length <= 2) {
+  for (i = 0; i < checked.length; i++) {
+    label[i] = charInfo[checked[i]];
+  }
+}
+
+option.axes.xaxis.label = label[0];
+option.axes.yaxis.label = label[1];
+
+
+$("#chart").show();
 $("#chart").empty();
 $("#chart").off(); //紐付けられた全イベントを解除
-$("#chart").height($("#chart").width());
-var plot = $.jqplot("chart", [plotData], plotOp);
-
-
-
+var plot = $.jqplot("chart", [data], option);
 
 //拡大した際にはみ出たバブル達を隠す（jqplotに報告してあげようかな）
 $(".jqplot-series-canvas").css({overflow: "hidden"});
 
 //バブルがマウスオーバーされたときにアプリの名前のツールチップを表示する
-$('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {   
-    //バブルの位置(data[0],data[1])をページ上の座標(x,y)に変換
-    var x = plot.axes.xaxis.u2p(data[0]);
-    var y = plot.axes.yaxis.u2p(data[1]);  // convert y axis units to pixels on grid
-    var color = 'rgb(50%,50%,100%)';
+$('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {
 
-    //ツールチップの位置を指定
-    $('.jqplot-cursor-tooltip').css({left:x+radius+5, top:y-radius-5});
+  var simapps = <%= @simapps.to_json.html_safe %>;
 
-    //ツールチップの中身をアプリの名前（バブルチャートのラベル）に指定
-    //data[4]は上のほうで勝手に設定したパッケージID
-    var title = "";
-     <% @simapps.each do |simapp| %>
-       if (data[4] == "<%= simapp["packageid"] %>") {
-       title = "<%= simapp["title"] %>"
-       } 
-    <% end %>
-    $('.jqplot-cursor-tooltip')
-       .html('<span style="font-size:14px;font-weight:bold;color:'+color+';">'+title+'</span>');
+  //バブルの位置(data[0],data[1])をページ上の座標(x,y)に変換
+  var x = plot.axes.xaxis.u2p(data[0]);
+  var y = plot.axes.yaxis.u2p(data[1]);
+  var color = 'rgb(50%,50%,100%)';
 
-    $('.jqplot-cursor-tooltip').show();
+  //ツールチップの位置を指定
+  $('.jqplot-cursor-tooltip')
+     .css({left:x+radius+5, top:y-radius-5});
+
+  //ツールチップの中身をアプリの名前（バブルチャートのラベル）に指定
+  //data[4]は上のほうで勝手に設定したパッケージID
+  var title = "";
+  for (i = 0; i < simapps.length; i++) {
+    if (data[4] == simapps[i].packageid) {
+      title = simapps[i].title;
+    }
+  }
+
+  $('.jqplot-cursor-tooltip')
+                         .html('<span>'+title+'</span>');
+
+  $('.jqplot-cursor-tooltip').show();
 });
 
 $('#chart').bind('jqplotDataUnhighlight', function (ev, seriesIndex, pointIndex, data) {
-    $('.jqplot-cursor-tooltip').empty();
-    $('.jqplot-cursor-tooltip').hide();
+  $('.jqplot-cursor-tooltip').empty();
+  $('.jqplot-cursor-tooltip').hide();
 });
 
 //バブルがクリックされたときにそのアプリのウェブページに飛ばす
 //
 $('#chart').bind('jqplotDataClick',　function (ev, seriesIndex, pointIndex, data) {
-    var url = "https://play.google.com/store/apps/details?id=" 
-    + data[4] 
-    + "&hl=ja";
-    //data[4]は上のほうで勝手に設定したパッケージID
-    window.open(url);
+  var url = "https://play.google.com/store/apps/details?id="
+          + data[4]
+          + "&hl=ja";
+  //data[4]は上のほうで勝手に設定したパッケージID
+  window.open(url);
 });
 
-
 //部分テンプレートを呼び出す
-//コントローラ内のインスタンス変数がなぜかここでは取得できない・・・
 $("#msg").html("<%= j render(:partial => 'applink') %>");
 $("#appdata").html("<%= j render(:partial => 'data') %>");
-console.log(plot);
-<% end %>

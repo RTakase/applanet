@@ -56,6 +56,7 @@ group :development do
   gem 'binding_of_caller'
   gem 'pry-byebug'        
   gem 'pry-rails'
+  gem 'meta_request'
 end
 
 gem 'twitter-bootstrap3-rails'

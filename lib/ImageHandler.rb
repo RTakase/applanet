@@ -2,19 +2,23 @@
 require "rmagick"
 require "open-uri"
 require "pp"
+require "tempfile"
 #いちいち Magick:: を書くのが面倒なため親クラス？に指定
 include Magick
 
-class ImageHandler
+class ImageHandler < StringIO
 
   @image
+
+  def hoge 
+  end
   
   def initialize(url)
-    
+
     #Magick::Image.read の戻り値は配列　中身は1要素1レイヤー
+    #ブロック中のfはTempfileなのかStringIOなのかわからないよ！
     @image = open(url) do |f|
-      Image.read(f.path).first
-      #f.delete
+      Image.from_blob(f.read).first
     end
 
   end
