@@ -1,0 +1,101 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any styles
+ * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+ * file per style scope.
+ *
+ * require jqplot
+ */
+@import "bootstrap-sprockets";
+@import "bootstrap";
+@import "font-awesome-sprockets";
+@import "font-awesome";
+
+$color-primary:#337ab7;
+$color-sucess:#5cb85c;
+
+.panel-title>a {
+    text-decoration:none;
+}
+
+.panel-body {
+    font-family:"Meiryo UI", "Arial", "sans-serif";
+    background-color:#DAE4F6;
+}
+
+/* 子供にのみ！ */
+.accordion-body#content>div {
+}
+
+#msg {
+    font-size:160%;
+    vertical-align:top; 
+}
+
+#input-app {
+    .chars {
+        padding-top: 10px;
+        .emptybox {
+            color: $color-primary;
+            margin:0px;
+        }
+        .empty-arrow span {
+            vertical-align:middle;
+        }           
+
+        .checkbox {
+            color: $color-sucess;
+            margin:0px;
+        }
+
+        .checklabel {
+            font-weight: bold;
+            text-align:center;
+            span {
+                vertical-align:middle;
+            }
+        }
+        .btn {
+            width:90%;
+            text-decoration:none;
+        }
+        .char {
+            #padding: 0px;
+        }
+    }
+}
+.content {
+    .graph {
+        padding:0px;
+    }
+}
+
+body {
+    background-color:#dcdcdc;
+    font-size:16px;
+}
+
+.jqplot-cursor-tooltip>span {
+    font-size:150%;
+    font-weight:bold;
+    color:#8080FF;
+    background:none repeat scroll 0 0 rgba(208, 208, 208, 0.8);
+}
+
+.graph {
+    .xaxis {
+        padding-top:5px;
+    }
+    .yaxis {
+        padding-right:5px;
+    }
+    .chart {
+        padding:0px;
+    }
+}
