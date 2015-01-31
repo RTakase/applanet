@@ -1,5 +1,7 @@
 $(function(){
+    //メモリアイコンの描画をヒモ付
     $.jqplot.postDrawHooks.push(function() {$.fn.drawTickIcon() });
+
     $(document).on("ajax:beforeSend", function(){ $("#msg").html("検索中・・・");});
 
     //チェックボックス風トグルボタン達
@@ -45,6 +47,8 @@ $(function(){
             }
         });
     }
+    //わかりやすさのために基準ボタンを一つクリックしておく
+    $("#input-app .btn[name=title]").click();      
 });
 
 

@@ -62,3 +62,5 @@ end
 gem 'bootstrap-sass', '~> 3.3.1'
 
 gem 'font-awesome-sass'
+
+gem 'statsample'#, :git => 'git://github.com/clbustos/statsample.git'

@@ -3,12 +3,16 @@
 require "./lib/GooglePlayScraper" 
 require "./lib/GoogleSearchScraper" 
 require "./lib/ImageHandler"
-require 'levenshtein' #編集距離を計算してくれる
+require "levenshtein" #編集距離を計算してくれる
+require "statsample"
 
 class NoCharError < StandardError
 end
 
 class AppsController < ApplicationController
+
+  def covariance_matrix
+  end
 
   def error
   end
@@ -60,7 +64,7 @@ class AppsController < ApplicationController
       end
 
       #DB中の全アプリでループ
-      @simapps = AndroidApp.take(5000).collect do |target|
+      @simapps = AndroidApp.take(10000).collect do |target|
       #@simapps = AndroidApp.all.collect do |target|
  
         #上で計算しておいた特徴量とtargetの特徴量で類似度を計算
@@ -87,7 +91,41 @@ class AppsController < ApplicationController
       @simapps.sort! {|a,b| b["distance"] <=> a["distance"]}
 
       #上位x件を抜き出し      #magic number
-      @simapps = @simapps.values_at(0..100)
+      @simapps = @simapps.values_at(0..10)
+
+      #主成分分析
+      #https://github.com/clbustos/statsample
+      if @simapps[0]["similarity"].length >= 3
+        
+        cov = covariance_matrix(@simapps)
+        
+        pca = Statsample::Factor::PCA.new(cov)
+
+        #中身を随時減らしていくために別途用意
+        _evec = pca.eigenvectors
+        _eval = pca.eigenvalues
+
+        eval = Array.new
+        evec = Array.new
+
+        #最大の固有値に対応する固有ベクトルを2個選ぶ
+        #固有値の配列の並びと固有ベクトルの配列の並びは対応付いてると信じてる
+        (0..1).each do |i|
+          eval[i] = _eval.max
+          index = _eval.index(eval[i])
+          evec[i] = _evec[index]
+          _evec.delete(evec[i])
+          _eval.delete(eval[i])
+        end
+
+        #類似度を次元削減
+        (0..@simapps.length-1).each do |i|
+          vec = Vector.elements(@simapps[i]["similarity"])         
+          @simapps[i]["similarity"] = evec.collect do |evec|     
+            evec.inner_product(vec)
+          end          
+        end
+      end
 
     rescue OpenURI::HTTPError => ex.message
       @message = ex.message
@@ -124,10 +162,40 @@ class AppsController < ApplicationController
   end
 
   def calcEditDistance(actChar, pssChar)
-     Levenshtein.distance(actChar, pssChar)
+    Levenshtein.distance(actChar, pssChar)
   end
 
   def calcSetDifference(actChar, pssChar)
     ((actChar|pssChar) - (actChar&pssChar)).length
+  end
+
+  #Statsampleがベクトル間の共分散行列しかなさそうだったので要素間のものを定義
+  def covariance_matrix(simapps)
+    row = simapps[0]["similarity"].length 
+    col = simapps.length
+    mean = Array.new(row,0.0)
+    cov = Matrix.zero(row)
+
+    #平均値を算出
+    (0..col-1).each do |i| 
+      data = simapps[i]["similarity"]
+
+      (0..row-1).each do |j|
+        mean[j] += data[j]
+      end
+    end
+    mean.collect! {|v| v / col }
+
+    #共分散行列を算出
+    (0..col-1).each do |i|
+      data = simapps[i]["similarity"]
+
+      (0..row-1).each do |j|
+        (0..row-1).each do |k|
+          cov[j,k] += (data[j] - mean[j]) * (data[k] - mean[k])
+        end
+      end
+    end
+    cov.collect {|v| v / col }
   end
 end
