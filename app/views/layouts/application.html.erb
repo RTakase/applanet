@@ -13,87 +13,100 @@
   </head>
   <body>
 
-    <div id="overall" class="accordion">
+    <div class="panel-group" id="overall" role="tablist">
 
-      <div class="accordion-group">
-        <div class="accordion-heading heading" >
-          <a class="accordion-toggle" data-toggle="collapse" data-parent="#overall" href="#heading">Applanet</a>
+      <!-- ******** overall-heading ******** -->
+      <div class="panel panel-default">
+        <div class="panel-heading" id="overall-heading1" role="tab">
+          <span class="panel-title">
+            <a data-toggle="collapse" aria-controls="overall-body1"
+               data-parent="#overall" href="#overall-body1">
+              <i class="fa fa-angle-double-down"></i>
+              Applanet
+            </a>
+
+          </span>
         </div>
 
-        <div class="accordion-body collapse in" id="heading">
-          <div class="accordion-inner">
+        <div class="panel-collapse collapse in" id="overall-body1"
+             aria-labelledby="overall-heading1" role="tabpanel">
+          <div class="panel-body">
             <%= yield(:heading) %>
           </div>
         </div>
-      </div> <!-- overall-heading -->
+      </div> 
+      <!-- ******** overall-heading ******** -->
 
-      <div class="accordion-group">
-        <div class="accordion-heading howto">
-          <a class="accordion-toggle" data-toggle="collapse" data-parent="#overall" href="#howto">How To</a>
+      <!-- ******** overall-howto ******** -->
+      <div class="panel panel-default">
+        <div class="panel-heading" id="overall-heading2" role="tab">
+          <span class="panel-title">
+            <a class="collapsed" data-toggle="collapse" 
+               aria-controls="overall-body2"
+               data-parent="#overall" href="#overall-body2">
+              <i class="fa fa-angle-double-down"></i>
+              How To
+            </a>
+          </span>
         </div>
 
-        <div class="accordion-body collapse" id="howto">
-          <div class="accordion-inner">
+        <div class="panel-collapse collapse" id="overall-body2"
+             aria-labelledby="overall-howto2" role="tabpanel">
+          <div class="panel-body">
             <%= yield(:howto) %>
           </div>
         </div>
-      </div> <!-- overall-howto -->
+      </div> 
+      <!-- ******** overall-howto ******** -->
 
-    <div class="accordion-group">
-        <div class="accordion-heading content">
-          <a class="accordion-toggle" data-toggle="collapse" data-parent="#overall" href="#content">Contents</a>
+      <!-- ******** overall-content ******** -->
+      <div class="panel panel-default">
+        <div class="panel-heading" id="overall-heading3" role="tab">
+          <span class="panel-title">
+            <a class="collapsed" data-toggle="collapse" 
+               aria-controls="overall-body3"
+               data-parent="#overall" href="#overall-body3">
+              <i class="fa fa-angle-double-down"></i>
+              Content
+            </a>
+          </span>
         </div>
 
-        <!-- ここのdivのclassにinをつければはじめから展開される -->
-        <div class="accordion-body collapse in" id="content">
-          <div class="accordion-inner">
+        <div class="panel-collapse collapse in" id="overall-body3"
+             aria-labelledby="overall-content3" role="tabpanel">
+          <div class="panel-body">
             <%= yield(:content) %>
           </div>
         </div>
-      </div> <!-- overall-content -->
+      </div> 
+      <!-- ******** overall-content ******** -->
 
-    <div class="accordion-group">
-      <div class="accordion-heading content">
-        <a class="accordion-toggle" data-toggle="collapse" data-parent="#overall" href="#data">Data</a>
-      </div>
-
-      <!-- ここのdivのclassにinをつければはじめから展開される -->
-      <div class="accordion-body collapse" id="data">
-        <div class="accordion-inner">
-          <%= yield(:data) %>
+      <!-- ******** overall-data ******** -->
+      <div class="panel panel-default">
+        <div class="panel-heading" id="overall-heading4" role="tab">
+          <span class="panel-title">
+            <a class="collapsed" data-toggle="collapse" 
+               aria-controls="overall-body4"
+               href="#overall-body4">
+              <i class="fa fa-angle-double-down" aria-hidden="true"></i>
+              Data
+            </a>
+          </span>
         </div>
-      </div>
+
+        <div class="panel-collapse collapse" id="overall-body4"
+             aria-labelledby="overall-data4" role="tabpanel">
+          <div class="panel-body">
+            <%= yield(:data) %>
+          </div>
+        </div>
+      </div> 
+      <!-- ******** overall-data ******** -->
+      
+
+
+    
     </div> <!-- overall -->
-
-    <!--
-    <div class="navbar navbar-static-top">
-      <div class="container">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="#">Applanet</a>
-        <div class="nav-collapse collapse navbar-responsive-collapse">
-          <ul class="nav navbar-nav">
-            <li><%= link_to "Link1", "/path1"  %></li>
-            <li><%= link_to "Link2", "/path2"  %></li>
-            <li><%= link_to "Link3", "/path3"  %></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="container">
-          <%#= bootstrap_flash %>
-
-
-      <footer>
-        <p>&copy; Company 2015</p>
-      </footer>
-
-    </div> 
-    -->
-
-
+    
   </body>
 </html>

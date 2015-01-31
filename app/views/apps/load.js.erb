@@ -32,6 +32,7 @@ for (i = 0; i < simapps.length; i++) {
 }
 
 var option = {
+  gridPadding: 0,
   seriesDefaults: {
     renderer: $.jqplot.BubbleRenderer,
     shadow: false,
@@ -42,42 +43,61 @@ var option = {
     }
   },
   axesDefaults: {
-    min: -0.1,
-    max: 1.1,
-    tickOptions: {
-      formatString: '%0.2f',
-    },
-    //ticks: [-0.2,0,0.2,0.4,0.6,0.8,1.0],
+    showTicks: false,
+    //tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+    //showTickMarks: false,
+    /* tickOptions: {
+       formatter: function(format, value) {
+       var cls = "";
+       var id = "";
+       switch(value*10) {
+       case -1:
+       cls = "smile-o"
+       id = "graph-good"
+       break;
+       case 5:
+       cls = "meh-o"
+       id = "graph-normal"
+       break;
+       case 11:
+       cls = "frown-o"
+       id = "graph-bad"
+       break;
+       }
+       return $.jqplot.sprintf(format, cls, id);
+       }, */
+      //formatString: "<i class='fa fa-%s' id='%s'></i>"
+  //  }
+    //ticks: [-0.1, 0.5, 1.1]
   },
-  axes: {
-    xaxis: {
-      label: ""
-    },
-    yaxis: {
-      label: "",
-      labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-    }
-  },
+    /* axes: {
+       xaxis: {
+       //      label: ""
+       },
+       yaxis: {
+       //label: "",
+       //labelRenderer: $.jqplot.CanvasAxisLabelRenderer
+       }
+       }, */
   cursor: {
     show: true,
     zoom: true,
     showTooltip: false
   }
 };
+          /* var label = [
+             option.axes.xaxis.label,
+             option.axes.yaxis.label
+             ];
 
-var label = [
-  option.axes.xaxis.label,
-  option.axes.yaxis.label
-];
+             if (checked.length <= 2) {
+             for (i = 0; i < checked.length; i++) {
+             label[i] = charInfo[checked[i]];
+             }
+             }
 
-if (checked.length <= 2) {
-  for (i = 0; i < checked.length; i++) {
-    label[i] = charInfo[checked[i]];
-  }
-}
-
-option.axes.xaxis.label = label[0];
-option.axes.yaxis.label = label[1];
+             option.axes.xaxis.label = label[0];
+             option.axes.yaxis.label = label[1]; */
 
 
 $("#chart").show();

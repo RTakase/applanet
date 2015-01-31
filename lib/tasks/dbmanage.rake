@@ -37,9 +37,11 @@ namespace :dbmanage do
           puts ""
           puts "#{emptyAttrs} in #{app["packageid"]} was made filled!"
         end         
-      rescue => ex
-        puts ""
-        puts app["packageid"] + " => " + ex.message
+        rescue => ex
+        app.destroy
+        app.save
+        puts "was destroyed. reasons are here."
+        puts ex.message
       end
     end
   end

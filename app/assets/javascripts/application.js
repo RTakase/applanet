@@ -12,10 +12,10 @@
 //
 //= require jquery
 //=require jquery_ujs
-//= require twitter/bootstrap
+//= require bootstrap-sprockets
 //= require jqplot
 // require jqplot/plugins/highlighter
-// require plugins/canvasAxisTickRenderer
+// require jqplot/canvasAxisTickRenderer
 // require plugins/canvasAxisLabelRenderer
 // require plugins/canvasOverlay
 // require plugins/canvasTextRenderer

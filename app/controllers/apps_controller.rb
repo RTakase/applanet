@@ -32,8 +32,8 @@ class AppsController < ApplicationController
       charCalculator = {
         "title" => proc{|app| app["title"] },
         "icongeo" => method(:calcAverageHash),
-        "simapps" => proc{|app| app["simapps"] }
-      } 
+        "simapps" => proc{|app| app["simapps"]}
+      }
 
       #それぞれの基準における距離
       diffCalculator = {
@@ -44,52 +44,50 @@ class AppsController < ApplicationController
 
       #それぞれの基準における距離の最大値
       diffMax = {
-        "title" => method(:getTitleMaxLength),
+        "title" => proc {|*args|
+          args.max {|a,b| a.length <=> b.length}.length
+        },#method(:getTitleMaxLength),
         "icongeo" => proc{|*args| 64 },
-        "simapps" => proc{|*args| 0 }
+        "simapps" => proc{|*args| 
+          args.inject([]) {|m,v| m|v}.length
+          }
       }
-      
-      #与えられたactとpssに対して、charが示す特徴量での類似度を算出するproc
-      #特徴量　→　距離　→　類似度
-      calcSimilarity = proc do |act, pss, char|
-        actChar = charCalculator[char].call(act)
-        pssChar = charCalculator[char].call(pss)
-        diff = diffCalculator[char].call(actChar, pssChar)
-        max = diffMax[char].call(actChar, pssChar)
-        (max - diff).to_f / max
+
+      #スクレイピング結果からチェックされた特徴量を計算しておく
+      act = Hash.new
+      @checked.each do |char|
+        act[char] = charCalculator[char].call(@app)
       end
 
-      #キーアプリの類似度は予め計算しておく（procのcurryを利用）
-      calcSimilarity.curry.(@app)
-
       #DB中の全アプリでループ
-      #@simapps = AndroidApp.take(31).collect do |target|
-      @simapps = AndroidApp.all.collect do |target|
+      @simapps = AndroidApp.take(5000).collect do |target|
+      #@simapps = AndroidApp.all.collect do |target|
+ 
+        #上で計算しておいた特徴量とtargetの特徴量で類似度を計算
+        sim = @checked.collect do |char|
+          pssChar = charCalculator[char].call(target)
+          diff = diffCalculator[char].call(act[char], pssChar)
+          max = diffMax[char].call(act[char], pssChar)
+          (max - diff).to_f / max
+        end
         
-        #viewで使うようのデータ
+        #三平方の定理よりキーアプリとの距離を算出
+        dis = Math.sqrt(sim.inject(0) {|m, v| m += v*v })
+
+        #viewで使うようのデータを返却
         viewData = {
           "title" => target["title"],
           "packageid" => target["packageid"],
-          "similarity" => Array.new
+          "similarity" => sim,
+          "distance" => dis
         }
-
-        #チェックされた特徴量で類似度を算出
-        viewData["similarity"] = @checked.collect do |char|
-          calcSimilarity.call(@app, target, char)
-        end
-
-        #三平方の定理よりキーアプリとの距離を算出
-        viewData["distance"] = 
-          Math.sqrt(viewData["similarity"].inject {|m, v| m += v*v })
-
-        viewData
       end
 
       #距離でソート
       @simapps.sort! {|a,b| b["distance"] <=> a["distance"]}
 
       #上位x件を抜き出し      #magic number
-      @simapps = @simapps.values_at(0..30)
+      @simapps = @simapps.values_at(0..100)
 
     rescue OpenURI::HTTPError => ex.message
       @message = ex.message
@@ -118,10 +116,10 @@ class AppsController < ApplicationController
   end
 
   def calcAverageHash(app)
-    if app["averagehash"].blank?
+    if app["avehash"].blank?
       ImageHandler.new(app["iconurl"]).calcAverageHash
-    else 
-      app["averagehash"]
+    else
+      app["avehash"]
     end
   end
 
@@ -130,6 +128,6 @@ class AppsController < ApplicationController
   end
 
   def calcSetDifference(actChar, pssChar)
-    return 0
+    ((actChar|pssChar) - (actChar&pssChar)).length
   end
 end
