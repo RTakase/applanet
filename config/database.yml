@@ -19,8 +19,10 @@ default: &default
   encoding: utf-8
   host: localhost
   owner: ryohe
-  username: postgres
-  password: 28karasu
+  #username: postgres
+  #password: 28karasu
+  username: ryohe
+  password: ryohe
   database: androidApp
   # For details on connection pooling, see rails configuration guide
   # http://guides.rubyonrails.org/configuring.html#database-pooling
