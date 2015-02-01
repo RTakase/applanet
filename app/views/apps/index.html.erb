@@ -2,30 +2,42 @@
 <%#= stylesheet_link_tag "application" %>
 
 <%= content_for(:heading) do %>
-   似ているアンドロイドアプリを探しましょう。<br>
-   「このアプリと」似ているアイコンのアプリが知りたいけど検索できない・・・<br>
-   「このアプリと」同じような機能のアプリが欲しいけど有名なやつしか検索できない・・・<br>
-   そんなニッチなニーズを満たすべく、このページはアプリでアプリを検索します。<br><br>
-   <span style="font-size:70%;">
-   ちなみに、現在似ているアプリは検索できません。正確には、検索できるけれど似ていません。特徴量の追加と精度向上、類似度計算の追加はしばしお待ちあれ！
-   </span>
-   <%= @hogege %>
+  似ているアンドロイドアプリを探しましょう。<br>
+  「このアプリと」似ているアイコンのアプリが知りたいけど検索できない・・・<br>
+  「このアプリと」同じような機能のアプリが欲しいけど有名なやつしか検索できない・・・<br>
+  そんなニッチなニーズを満たすべく、このページはアプリでアプリを検索します。<br><br>
+  <span style="font-size:70%;">
+    似ているアプリが検索できるようになってきました！合わせてとても重くなりました。
+  </span>
+  <i class="fa fa-child"></i>
 <% end %>
 
 <%= content_for(:howto) do %>
-  始めに、「これと似ているアプリが欲しい！」のこれの名前をテキストボックスに入力してください。<br>
-  次に、その下のボタンで、「似ている」の基準を選択してください。複数選択可能です。<br>
-  最後に、検索ボタンは押さないでください。検索結果は全然似ていません。<br>
-  <br>
-  表示されたグラフでは、「似ている」アプリほど大きな円で描かれます。<br>
-  ごちゃごちゃしている箇所は、ドラッグアンドドロップでズームしてみましょう。元に戻るにはダブルクリックです。<br>
-  円をクリックすると、対応したアプリのGooglePlayページへリンクへ遷移します。帰ってきてくださいね。<br>
-  <br>
-   <span style="font-size:70%;">
-     入力部分は内部的にぐぐらせていただいてるので、その体で入力してもヒットします。<br>
-     「タイトル」による検索は、異なる言語間でうまく動作しません・・・<br>
-     たまにグラフがでてきません。もう一度検索ボタンを押してみてください。<br>
-</span>
+  手順：
+  <ul class="fa-ul">
+    <li><i class="fa-li fa fa-child"></i>
+      「これと似ているアプリが欲しい！」のこれの名前をテキストボックスに入力する（あいまい検索が可能です）
+    </li>
+    <li><i class="fa-li fa fa-child"></i>
+      似ているの基準を選択する
+    </li>
+    <li><i class="fa-li fa fa-child"></i>
+      検索ボタンを押す
+    </li>
+  </ul>
+
+  グラフについて：
+  <ul class="fa-ul">
+    <li><i class="fa-li fa fa-child"></i>
+      グラフ上では、「似ている」アプリほど大きな円で描かれます。
+    </li>
+    <li><i class="fa-li fa fa-child"></i>
+      ごちゃごちゃしている箇所は、ドラッグアンドドロップでズームしてみましょう。元に戻るにはダブルクリックです。
+    </li>
+    <li><i class="fa-li fa fa-child"></i>
+      円をクリックすると、対応したアプリのGooglePlayページへ遷移します。帰ってきてくださいね。
+    </li>
+  </ul>
 <% end %>
 
 <%= content_for(:content) do %>
@@ -33,19 +45,16 @@
   <div class="container-fluid">
 
     <div class="row content">   <!– グリッドを使用 –>
-      <div class="col-md-3 form">
+      <div class="col-xs-12 col-md-3 form">
         <%= render "form" %>
       </div>
-      <div class="col-md-6 graph">
+      <div class="col-xs-12 col-md-6 graph">
         <%= render "graph" %>
       </div>
-      <div class="col-md-3 applist">      
-        <div id="msg">
-          アプリの名前を入力してみてください！
-        </div>
+      <div class="col-xs-12 col-md-3 applist">     
+        <%#= render "applist" %>
       </div>
     </div>
-  </div>
   </div>
 
   <%#= render "nowloading" %>

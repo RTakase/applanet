@@ -1,0 +1,46 @@
+
+<div class="container-fluid">
+  <div class="panel-group" id="applist" role="tablist">
+    <span> 似ているアプリ一覧 </span>
+    <% simapps.each_with_index do |app, i| %>
+      
+      <% headingId = "h-" + app["packageid"].gsub(/\./, "-") %>
+      <% collapseId = "c-" + app["packageid"].gsub(/\./, "-") %>
+
+      <div class="panel panel-default">
+
+        <div class="panel-heading" id="<%= headingId %>" role="tab">         
+          <span class="panel-title">
+            <a aria-controls="<%= collapseId %>" href="#<%= collapseId %>"
+               class="collapsed" data-toggle="collapse" 
+               data-parent="#applist"           
+               aria-expanded="false">
+              <i class="fa fa-angle-double-down"></i>
+              <span class="order"> <%= (i+1).ordinalize %> </span>
+              <span> <%= app["title"] %> </span>
+            </a>
+          </span>
+        </div>
+        
+        <div id="<%= collapseId %>" aria-labelledby="<%= headingId %>"
+             class="panel-collapse collapse" role="tabpanel">
+          <div class="panel-body">
+
+            <% dbapp = dbapps[i] %>
+            <% desc = dbapp["description"].split("\n") %>
+            <% (0..2).each do |i| %>
+              <% break if desc.length <= i %>
+              <%= desc[i] %>
+            <% end %>
+            ...
+
+            <%= render(partial: 'applink', 
+                       locals: {app: dbapp, title: "Goto GooglePlay"}) %>
+            <!-- <span style="font-size:100%;"> アプリの情報</span> -->
+          </div>
+        </div>
+      </div>
+      
+    <% end %>
+  </div>
+</div>

@@ -17,8 +17,21 @@
 @import "font-awesome-sprockets";
 @import "font-awesome";
 
-$color-primary:#337ab7;
-$color-sucess:#5cb85c;
+$color-primary:#23527b;
+$color-success:#2a612a;
+
+.overall .panel-heading {
+    background-color:$color-primary;
+    color:#ffffff;
+}
+.btn-success {
+    background-color:$color-success;
+    border-color:$color-success;
+}
+.btn-primary {
+    background-color:$color-primary;
+    border-color:$color-primary;
+}
 
 .panel-title>a {
     text-decoration:none;
@@ -26,16 +39,8 @@ $color-sucess:#5cb85c;
 
 .panel-body {
     font-family:"Meiryo UI", "Arial", "sans-serif";
-    background-color:#DAE4F6;
-}
-
-/* 子供にのみ！ */
-.accordion-body#content>div {
-}
-
-#msg {
-    font-size:160%;
-    vertical-align:top; 
+    #background-color:#DAE4F6;
+    background-color:#ffffff;
 }
 
 #input-app {
@@ -50,7 +55,7 @@ $color-sucess:#5cb85c;
         }           
 
         .checkbox {
-            color: $color-sucess;
+            color: $color-success;
             margin:0px;
         }
 
@@ -70,32 +75,46 @@ $color-sucess:#5cb85c;
         }
     }
 }
-.content {
-    .graph {
-        padding:0px;
-    }
-}
-
 body {
-    background-color:#dcdcdc;
+    background-color:#ffffff;
     font-size:16px;
 }
 
 .jqplot-cursor-tooltip>span {
-    font-size:150%;
+    font-size:120%;
     font-weight:bold;
     color:#8080FF;
     background:none repeat scroll 0 0 rgba(208, 208, 208, 0.8);
 }
 
+.jqplot-bubble-label {
+    font-size:0.6em;
+    color:#ffffff;
+}
+
 .graph {
+    .msg {
+        vertical-align:top; 
+        padding:5px;
+    }
     .xaxis {
         padding-top:5px;
     }
     .yaxis {
         padding-right:5px;
+        padding-left:0px;
     }
     .chart {
         padding:0px;
+    }
+}
+
+.applist {
+    .panel-heading {
+        background-color:$color-success;
+        color: #ffffff;
+    }
+    .panel-body {
+        font-size:80%;
     }
 }

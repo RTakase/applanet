@@ -2,7 +2,18 @@ $(function(){
     //メモリアイコンの描画をヒモ付
     $.jqplot.postDrawHooks.push(function() {$.fn.drawTickIcon() });
 
-    $(document).on("ajax:beforeSend", function(){ $("#msg").html("検索中・・・");});
+    $(document).on("ajax:beforeSend", function(){ 
+        var msg = "検索しています・・・";
+        var chars = $("#char-result").val();
+        if (chars.search(/icongeo/) != -1) {
+            //msg += "30～60秒ほどかかるかもしれません・・・";
+            msg += "10秒ほどで終わるはずです・・・";
+        }
+        else {
+            msg += "10秒ほどで終わるはずです・・・";
+        }
+        msg += "<i class='fa fa-spin fa-spinner'></i>";            
+        $(".msg").html(msg);});
 
     //チェックボックス風トグルボタン達
     var buttons = $("#input-app .chars .btn");

@@ -1,11 +1,14 @@
 
 var data = [];
 
+var plotRGB = "#2a612a";
+var plotARGB = "rgba(42, 97, 42, 0.8)"
+
 var simapps = <%= @simapps.to_json.html_safe %>;
 
-var charInfo = <%= Applanet::Application.config.charInfo.to_json.html_safe %>;
+//var charInfo = <%= Applanet::Application.config.charInfo.to_json.html_safe %>;
 
-var checked = <%= @checked.to_json.html_safe %>
+//var checked = <%= @checked.to_json.html_safe %>
 
 //表示するデータから必要な部分を抜き取る
 for (i = 0; i < simapps.length; i++) {
@@ -23,7 +26,20 @@ for (i = 0; i < simapps.length; i++) {
   _data.push(0.4 * simapps[i].distance);
 
   //ラベル
-  _data.push(""+i);
+  switch(i) {
+    case 0:
+      suffix = "st";
+      break;
+    case 1:
+      suffix = "nd";
+      break;
+    case 2:
+      suffix = "rd";
+      break;
+    default:
+      suffix = "th";
+  }       
+  _data.push(""+(i+1)+suffix);
 
   //タイトルとかと紐付けするためのパッケージID(jqplotの仕様外）
   _data.push(simapps[i].packageid);
@@ -34,71 +50,30 @@ for (i = 0; i < simapps.length; i++) {
 var option = {
   gridPadding: 0,
   seriesDefaults: {
+    color: plotARGB,
     renderer: $.jqplot.BubbleRenderer,
     shadow: false,
     rendererOptions: {
       bubbleAlpha: 0.7,
-      varyBubbleColors: true,
+      varyBubbleColors: false,
          showlabels: true
     }
   },
-  axesDefaults: {
-    showTicks: false,
-    //tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-    //showTickMarks: false,
-    /* tickOptions: {
-       formatter: function(format, value) {
-       var cls = "";
-       var id = "";
-       switch(value*10) {
-       case -1:
-       cls = "smile-o"
-       id = "graph-good"
-       break;
-       case 5:
-       cls = "meh-o"
-       id = "graph-normal"
-       break;
-       case 11:
-       cls = "frown-o"
-       id = "graph-bad"
-       break;
-       }
-       return $.jqplot.sprintf(format, cls, id);
-       }, */
-      //formatString: "<i class='fa fa-%s' id='%s'></i>"
-  //  }
-    //ticks: [-0.1, 0.5, 1.1]
+  grid: {
+    gridLineColor: plotRGB,    // *Color of the grid lines.
+    background: '#ffffff',      // CSS color spec for background color of grid.
+    borderColor: plotRGB,     // CSS color spec for border around grid.
+    borderWidth: 1.0           // pixel width of border around grid.
   },
-    /* axes: {
-       xaxis: {
-       //      label: ""
-       },
-       yaxis: {
-       //label: "",
-       //labelRenderer: $.jqplot.CanvasAxisLabelRenderer
-       }
-       }, */
+  axesDefaults: {
+    showTicks: false
+  },
   cursor: {
     show: true,
     zoom: true,
     showTooltip: false
   }
 };
-          /* var label = [
-             option.axes.xaxis.label,
-             option.axes.yaxis.label
-             ];
-
-             if (checked.length <= 2) {
-             for (i = 0; i < checked.length; i++) {
-             label[i] = charInfo[checked[i]];
-             }
-             }
-
-             option.axes.xaxis.label = label[0];
-             option.axes.yaxis.label = label[1]; */
-
 
 $("#chart").show();
 $("#chart").empty();
@@ -108,22 +83,31 @@ var plot = $.jqplot("chart", [data], option);
 //拡大した際にはみ出たバブル達を隠す（jqplotに報告してあげようかな）
 $(".jqplot-series-canvas").css({overflow: "hidden"});
 
+//バブルがマウスオーバーされた際に対応するapplistを表示する
+//data[4]は上のほうで勝手に設定したパッケージID
+$('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {
+  var headingId = "h-" + data[4].replace(/\./g, "-");
+  $("#" + headingId + " a").click();
+});
+
+
+/*
 //バブルがマウスオーバーされたときにアプリの名前のツールチップを表示する
 $('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {
 
-  var simapps = <%= @simapps.to_json.html_safe %>;
+   var simapps = <%= @simapps.to_json.html_safe %>;
 
-  //バブルの位置(data[0],data[1])をページ上の座標(x,y)に変換
-  var x = plot.axes.xaxis.u2p(data[0]);
-  var y = plot.axes.yaxis.u2p(data[1]);
-  var color = 'rgb(50%,50%,100%)';
+   //バブルの位置(data[0],data[1])をページ上の座標(x,y)に変換
+   var x = plot.axes.xaxis.u2p(data[0]);
+   var y = plot.axes.yaxis.u2p(data[1]);
+   var color = 'rgb(50%,50%,100%)';
 
-  //ツールチップの位置を指定
-  $('.jqplot-cursor-tooltip')
-     .css({left:x+radius+5, top:y-radius-5});
+   //ツールチップの位置を指定
+   $('.jqplot-cursor-tooltip')
+   .css({left:x+radius+5, top:y-radius-5});
 
-  //ツールチップの中身をアプリの名前（バブルチャートのラベル）に指定
-  //data[4]は上のほうで勝手に設定したパッケージID
+   //ツールチップの中身をアプリの名前（バブルチャートのラベル）に指定
+   //data[4]は上のほうで勝手に設定したパッケージID
   var title = "";
   for (i = 0; i < simapps.length; i++) {
     if (data[4] == simapps[i].packageid) {
@@ -132,15 +116,16 @@ $('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, d
   }
 
   $('.jqplot-cursor-tooltip')
-                         .html('<span>'+title+'</span>');
+   .html('<span>'+title+'</span>');
 
-  $('.jqplot-cursor-tooltip').show();
+   $('.jqplot-cursor-tooltip').show();
 });
 
 $('#chart').bind('jqplotDataUnhighlight', function (ev, seriesIndex, pointIndex, data) {
   $('.jqplot-cursor-tooltip').empty();
   $('.jqplot-cursor-tooltip').hide();
 });
+*/
 
 //バブルがクリックされたときにそのアプリのウェブページに飛ばす
 //
@@ -150,8 +135,9 @@ $('#chart').bind('jqplotDataClick',　function (ev, seriesIndex, pointIndex, dat
           + "&hl=ja";
   //data[4]は上のほうで勝手に設定したパッケージID
   window.open(url);
-});
+}); 
 
 //部分テンプレートを呼び出す
-$("#msg").html("<%= j render(:partial => 'applink') %>");
+$(".msg").html("検索できました！<%= j render(:partial => 'applink', locals:{app: @app}) %>");
 $("#appdata").html("<%= j render(:partial => 'data') %>");
+$(".applist").html ("<%= j render(:partial => 'applist', locals: { simapps: @simapps, dbapps:@dbapps}) %>");

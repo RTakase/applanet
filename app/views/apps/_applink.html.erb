@@ -1,5 +1,6 @@
-<% url = "https://play.google.com/store/apps/details?id=%s&hl=ja" % @app["packageid"] %>
-<h2>
-  検索できました！：
-  <%= link_to(@app["title"], url) %>
-</h2>
+<% url = "https://play.google.com/store/apps/details?id=%s&hl=ja" % app["packageid"] %>
+<% label = defined?(title) ? title : app["title"] %>
+<a href="<%= url %>"
+   target="_blank">
+  <%= label %>
+</a>

@@ -12,16 +12,18 @@
     <%= javascript_include_tag "application" %>
   </head>
   <body>
-
-    <div class="panel-group" id="overall" role="tablist">
+    
+    <div class="panel-group overall" role="tablist">
+      <!-- <div class="panel-group" id="overall" role="tablist"> -->
 
       <!-- ******** overall-heading ******** -->
       <div class="panel panel-default">
         <div class="panel-heading" id="overall-heading1" role="tab">
-          <span class="panel-title">
-            <a data-toggle="collapse" aria-controls="overall-body1"
-               data-parent="#overall" href="#overall-body1">
-              <i class="fa fa-angle-double-down"></i>
+  <span class="panel-title">
+  <a data-toggle="collapse" aria-controls="overall-body1"
+               data-parent="#overall" 
+               href="#overall-body1">
+  <i class="fa fa-angle-double-down"></i>
               Applanet
             </a>
 
@@ -30,21 +32,21 @@
 
         <div class="panel-collapse collapse in" id="overall-body1"
              aria-labelledby="overall-heading1" role="tabpanel">
-          <div class="panel-body">
-            <%= yield(:heading) %>
+  <div class="panel-body">
+  <%= yield(:heading) %>
           </div>
         </div>
       </div> 
-      <!-- ******** overall-heading ******** -->
+<!-- ******** overall-heading ******** -->
 
-      <!-- ******** overall-howto ******** -->
-      <div class="panel panel-default">
-        <div class="panel-heading" id="overall-heading2" role="tab">
-          <span class="panel-title">
-            <a class="collapsed" data-toggle="collapse" 
+<!-- ******** overall-howto ******** -->
+<div class="panel panel-default">
+  <div class="panel-heading" id="overall-heading2" role="tab">
+  <span class="panel-title">
+  <a class="collapsed" data-toggle="collapse" 
                aria-controls="overall-body2"
                data-parent="#overall" href="#overall-body2">
-              <i class="fa fa-angle-double-down"></i>
+  <i class="fa fa-angle-double-down"></i>
               How To
             </a>
           </span>
@@ -52,60 +54,57 @@
 
         <div class="panel-collapse collapse" id="overall-body2"
              aria-labelledby="overall-howto2" role="tabpanel">
-          <div class="panel-body">
-            <%= yield(:howto) %>
+  <div class="panel-body">
+  <%= yield(:howto) %>
           </div>
         </div>
       </div> 
-      <!-- ******** overall-howto ******** -->
+<!-- ******** overall-howto ******** -->
 
-      <!-- ******** overall-content ******** -->
-      <div class="panel panel-default">
-        <div class="panel-heading" id="overall-heading3" role="tab">
-          <span class="panel-title">
-            <a class="collapsed" data-toggle="collapse" 
-               aria-controls="overall-body3"
-               data-parent="#overall" href="#overall-body3">
-              <i class="fa fa-angle-double-down"></i>
-              Content
-            </a>
-          </span>
-        </div>
+<!-- ******** overall-content ******** -->
+<div class="panel panel-default">
+  <div class="panel-heading" id="overall-heading3" role="tab">
+  <span class="panel-title">
+  <a class="collapsed" data-toggle="collapse" 
+     aria-controls="overall-body3"
+     data-parent="#overall" href="#overall-body3">
+  <i class="fa fa-angle-double-down"></i>
+    Content
+  </a>
+  </span>
+  </div>
 
-        <div class="panel-collapse collapse in" id="overall-body3"
-             aria-labelledby="overall-content3" role="tabpanel">
-          <div class="panel-body">
-            <%= yield(:content) %>
+  <div class="panel-collapse collapse in" id="overall-body3"
+       aria-labelledby="overall-content3" role="tabpanel">
+  <div class="panel-body">
+  <%= yield(:content) %>
+    </div>
+  </div>
+      </div>
+<!-- ******** overall-content ******** -->
+
+<!-- ******** overall-data ******** -->
+<div class="panel panel-default">
+  <div class="panel-heading" id="overall-heading4" role="tab">
+  <span class="panel-title">
+  <a class="collapsed" data-toggle="collapse" 
+         aria-controls="overall-body4"
+         href="#overall-body4">
+  <i class="fa fa-angle-double-down" aria-hidden="true"></i>
+        Data
+              </a>
+            </span>
           </div>
-        </div>
-      </div> 
-      <!-- ******** overall-content ******** -->
 
-      <!-- ******** overall-data ******** -->
-      <div class="panel panel-default">
-        <div class="panel-heading" id="overall-heading4" role="tab">
-          <span class="panel-title">
-            <a class="collapsed" data-toggle="collapse" 
-               aria-controls="overall-body4"
-               href="#overall-body4">
-              <i class="fa fa-angle-double-down" aria-hidden="true"></i>
-              Data
-            </a>
-          </span>
-        </div>
-
-        <div class="panel-collapse collapse" id="overall-body4"
-             aria-labelledby="overall-data4" role="tabpanel">
-          <div class="panel-body">
-            <%= yield(:data) %>
+          <div class="panel-collapse collapse" id="overall-body4"
+               aria-labelledby="overall-data4" role="tabpanel">
+  <div class="panel-body">
+  <%= yield(:data) %>
+            </div>
           </div>
-        </div>
-      </div> 
-      <!-- ******** overall-data ******** -->
-      
+        </div> 
+<!-- ******** overall-data ******** -->
 
-
-    
     </div> <!-- overall -->
     
   </body>

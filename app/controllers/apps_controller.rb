@@ -42,7 +42,7 @@ class AppsController < ApplicationController
       #それぞれの基準における距離
       diffCalculator = {
         "title" => method(:calcEditDistance),
-        "icongeo" => method(:calcEditDistance),
+        "icongeo" => method(:calcHamingDistance),
         "simapps" => method(:calcSetDifference)
       }
 
@@ -93,18 +93,19 @@ class AppsController < ApplicationController
       #上位x件を抜き出し      #magic number
       @simapps = @simapps.values_at(0..10)
 
+      @dbapps = @simapps.collect do |app|
+        AndroidApp.find_by(:packageid => app["packageid"])
+      end
+
       #主成分分析
       #https://github.com/clbustos/statsample
       if @simapps[0]["similarity"].length >= 3
-        
-        cov = covariance_matrix(@simapps)
-        
+        cov = covariance_matrix(@simapps)        
         pca = Statsample::Factor::PCA.new(cov)
 
         #中身を随時減らしていくために別途用意
         _evec = pca.eigenvectors
         _eval = pca.eigenvalues
-
         eval = Array.new
         evec = Array.new
 
@@ -163,6 +164,15 @@ class AppsController < ApplicationController
 
   def calcEditDistance(actChar, pssChar)
     Levenshtein.distance(actChar, pssChar)
+  end
+
+  def calcHamingDistance(actChar, pssChar)
+    actChar = actChar.split("")
+    pssChar = pssChar.split("")
+
+    actChar.inject(0) do |sum, v|
+      sum += v.to_i ^ pssChar.shift.to_i
+    end
   end
 
   def calcSetDifference(actChar, pssChar)

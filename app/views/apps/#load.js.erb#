@@ -1,0 +1,143 @@
+
+var data = [];
+
+var plotRGB = "#2a612a";
+var plotARGB = "rgba(42, 97, 42, 0.8)"
+
+var simapps = <%= @simapps.to_json.html_safe %>;
+
+//var charInfo = <%= Applanet::Application.config.charInfo.to_json.html_safe %>;
+
+//var checked = <%= @checked.to_json.html_safe %>
+
+//表示するデータから必要な部分を抜き取る
+for (i = 0; i < simapps.length; i++) {
+  var _data = [];
+
+  var sim = simapps[i].similarity;
+  for (j = 0; j < sim.length; j++) {
+    _data[j] = 1.0 - sim[j];
+  }
+
+  //一次元のときのための補正
+  if (_data.length == 1) _data.push(_data[0]);
+
+  //円のサイズ
+  _data.push(0.4 * simapps[i].distance);
+
+  //ラベル
+  switch(i) {
+    case 0:
+      suffix = "st";
+      break;
+    case 1:
+      suffix = "nd";
+      break;
+    case 2:
+      suffix = "rd";
+      break;
+    default:
+      suffix = "th";
+  }       
+  _data.push(""+(i+1)+suffix);
+
+  //タイトルとかと紐付けするためのパッケージID(jqplotの仕様外）
+  _data.push(simapps[i].packageid);
+
+  data.push(_data);
+}
+
+var option = {
+  gridPadding: 0,
+  seriesDefaults: {
+    color: plotARGB,
+    renderer: $.jqplot.BubbleRenderer,
+    shadow: false,
+    rendererOptions: {
+      bubbleAlpha: 0.7,
+      varyBubbleColors: false,
+         showlabels: true
+    }
+  },
+  grid: {
+    gridLineColor: plotRGB,    // *Color of the grid lines.
+    background: '#ffffff',      // CSS color spec for background color of grid.
+    borderColor: plotRGB,     // CSS color spec for border around grid.
+    borderWidth: 1.0           // pixel width of border around grid.
+  },
+  axesDefaults: {
+    showTicks: false
+  },
+  cursor: {
+    show: true,
+    zoom: true,
+    showTooltip: false
+  }
+};
+
+$("#chart").show();
+$("#chart").empty();
+$("#chart").off(); //紐付けられた全イベントを解除
+var plot = $.jqplot("chart", [data], option);
+
+//拡大した際にはみ出たバブル達を隠す（jqplotに報告してあげようかな）
+$(".jqplot-series-canvas").css({overflow: "hidden"});
+
+//バブルがマウスオーバーされた際に対応するapplistを表示する
+//data[4]は上のほうで勝手に設定したパッケージID
+$('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {
+  var headingId = "h-" + data[4].replace(/\./g, "-");
+  $("#" + headingId + " a").click();
+});
+
+
+/*
+//バブルがマウスオーバーされたときにアプリの名前のツールチップを表示する
+$('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {
+
+   var simapps = <%= @simapps.to_json.html_safe %>;
+
+   //バブルの位置(data[0],data[1])をページ上の座標(x,y)に変換
+   var x = plot.axes.xaxis.u2p(data[0]);
+   var y = plot.axes.yaxis.u2p(data[1]);
+   var color = 'rgb(50%,50%,100%)';
+
+   //ツールチップの位置を指定
+   $('.jqplot-cursor-tooltip')
+   .css({left:x+radius+5, top:y-radius-5});
+
+   //ツールチップの中身をアプリの名前（バブルチャートのラベル）に指定
+   //data[4]は上のほうで勝手に設定したパッケージID
+  var title = "";
+  for (i = 0; i < simapps.length; i++) {
+    if (data[4] == simapps[i].packageid) {
+      title = simapps[i].title;
+    }
+  }
+
+  $('.jqplot-cursor-tooltip')
+   .html('<span>'+title+'</span>');
+
+   $('.jqplot-cursor-tooltip').show();
+});
+
+$('#chart').bind('jqplotDataUnhighlight', function (ev, seriesIndex, pointIndex, data) {
+  $('.jqplot-cursor-tooltip').empty();
+  $('.jqplot-cursor-tooltip').hide();
+});
+*/
+
+//バブルがクリックされたときにそのアプリのウェブページに飛ばす
+//
+$('#chart').bind('jqplotDataClick',　function (ev, seriesIndex, pointIndex, data) {
+  var url = "https://play.google.com/store/apps/details?id="
+          + data[4]
+          + "&hl=ja";
+  //data[4]は上のほうで勝手に設定したパッケージID
+  window.open(url);
+}); 
+
+//部分テンプレートを呼び出す
+$(".msg").html("検索できました！<%= j render(:partial => 'applink', locals:{app: @app}) %>");
+$("#appdata").html("<%= j render(:partial => 'data') %>");
+$(".applist").html ("<%= j render(:partial => 'applist', locals: { simapps: @simapps, dbapps:@dbapps}) %>");

@@ -22,7 +22,7 @@ namespace :dbmanage do
         print "."
         
         unless emptyAttrs.empty?
-          newone = GooglePlyScraper.new(app["packageid"]).app
+          newone = GooglePlayScraper.new(app["packageid"]).app
 
           emptyAttrs.each do |attr|
             app[attr] = newone[attr]
