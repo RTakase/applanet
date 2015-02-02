@@ -13,7 +13,7 @@ namespace :dbmanage do
   task :adjust => :environment do 
     
     AndroidApp.all.each_with_index do |app, i|
-      if i.modulo(4) == 0
+      if i.modulo(2) == 0
         app.destroy
         app.save
       end
