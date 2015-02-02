@@ -8,6 +8,19 @@ namespace :dbmanage do
   require "GooglePlayScraper"
   require "ImageHandler"
 
+
+  desc "adjust database size"
+  task :adjust => :environment do 
+    
+    AndroidApp.all.each_with_index do |app, i|
+      if i.modulo(4) == 0
+        app.destroy
+        app.save
+      end
+    end
+  end
+
+
   desc "check emply value in androidapp database and rewrite"
   task :check => :environment do |x, args|
     # ログの出力を切る
