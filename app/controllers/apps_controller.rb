@@ -64,8 +64,8 @@ class AppsController < ApplicationController
       end
 
       #DB中の全アプリでループ
-      @simapps = AndroidApp.take(10000).collect do |target|
-      #@simapps = AndroidApp.all.collect do |target|
+      #@simapps = AndroidApp.take(10000).collect do |target|
+      @simapps = AndroidApp.all.collect do |target|
  
         #上で計算しておいた特徴量とtargetの特徴量で類似度を計算
         sim = @checked.collect do |char|
