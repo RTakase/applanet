@@ -17,104 +17,275 @@
 @import "font-awesome-sprockets";
 @import "font-awesome";
 
-$color-primary:#23527b;
-$color-success:#2a612a;
+$myRed:#922222;
+$myBlue:#23527b;
+$myGreen:#2a612a;
+$arrow-size:32px; //矢印の傘の広さ（全長？）
+$arrow-width:$arrow-size*0.2;
+$font-size:16px;
+$color-background:#ffffff;
+$check-icon-size:43px;
 
-.overall .panel-heading {
-    background-color:$color-primary;
-    color:#ffffff;
+@mixin linear-gradient($direction, $from, $to) {
+  /* Old browsers */
+  background: #7DBB3C; 
+  /* FF3.6+ */
+  background: -moz-linear-gradient($direction,
+    $from 0%, $to 100%);
+  /* Chrome10+,Safari5.1+ */ 
+  background: -webkit-linear-gradient($direction,
+    $from 0%, $to 100%); 
+  /* Opera 11.10+ */
+  background: -o-linear-gradient($direction,
+    $from 0%, $to 100%); 
+  /* IE10+ */
+  background: -ms-linear-gradient($direction, 
+    $from 0%, $to 100%); 
 }
-.btn-success {
-    background-color:$color-success;
-    border-color:$color-success;
+
+/* @mixin box-shadow-repeat($times, $xoffset, $yoffset, $smudge, $color) {
+   @for $i from 0 to$times {
+   box-shadow:$xoffset $yoffset $smudge $color inset;
+   }
+   } */
+
+/************** 自分で作った表示要素 ***************/
+.leftangle {
+  display: block;
+  position: absolute;
+  left:0;
+  width: 0;
+  height: 0;    
+  border:0.5*$arrow-size solid $color-background;
+  border-right-color: $myGreen;
+  z-index: 2;
+
 }
-.btn-primary {
-    background-color:$color-primary;
-    border-color:$color-primary;
+
+.hbar {
+  margin-right:5px;
+  position:absolute;
+  @include linear-gradient(left, $myGreen, rgba($myGreen, 0));
+  border:none;
+  top:0.5 * ($arrow-size - $arrow-width); 
+  left:0;
+  right:0;
+  height:$arrow-width;
+  z-index: 1;
+}
+
+.downangle {
+  display: block;
+  position: absolute;
+  bottom:0px;
+  right:0;
+  width: 0;
+  height: 0;    
+  border:0.5*$arrow-size solid $color-background;
+  border-top-color: $myGreen;
+
+}
+.vbar {
+  margin-top:5px;
+  position:absolute;
+  @include linear-gradient(bottom, $myGreen, rgba($myGreen, 0));
+  //background-color:$color-background;
+  top:0;
+  bottom:0;
+  right:0.5 * ($arrow-size - $arrow-width); 
+  width:$arrow-width;
+}
+
+
+/************** 横断的な設定 ***************/
+.status {
+  font-size:70%;
+  text-align:center;
+  margin-bottom:10px;
+  border-bottom: {
+    color:$myGreen;
+    style:solid;
+    width:2px;
+  }
 }
 
 .panel-title>a {
-    text-decoration:none;
+  text-decoration:none;
 }
 
 .panel-body {
-    font-family:"Meiryo UI", "Arial", "sans-serif";
-    #background-color:#DAE4F6;
-    background-color:#ffffff;
+  font-family:"Meiryo UI", "Arial", "sans-serif";
+  background-color:$color-background;
+}
+
+.msg {
+  display: -webkit-flex;
+  display: flex;
+  justify-content:stretch;
+  flex-wrap:wrap;
+  align-content:center;
+  padding:5px;
+
+  span {
+    
+  }
+  /* .fa { */
+  .mark {
+    //display:inline-block;
+    font-size:80%;
+    padding:0 5px 0 5px;
+    margin:0 5px 0 5px;
+    background-color:$myRed;
+    color:#ffffff;
+    border-radius:50%;
+    box-shadow:
+    0 0 2px $color-background inset,
+    0 0 2px $color-background inset,
+    0 0 2px $color-background inset,
+    0 0 2px $color-background inset,
+    0 0 2px $color-background inset;
+  }
+}
+
+/************** 特定の要素の設定 ***************/
+
+.overall .panel-heading {
+  background-color:$myBlue;
+  color:#ffffff;
 }
 
 #input-app {
-    .chars {
-        padding-top: 10px;
-        .emptybox {
-            color: $color-primary;
-            margin:0px;
-        }
-        .empty-arrow span {
-            vertical-align:middle;
-        }           
 
-        .checkbox {
-            color: $color-success;
-            margin:0px;
-        }
+  .btn[type=submit] {
+    background-color:$myBlue;
+    color:#ffffff;
+  }
 
-        .checklabel {
-            font-weight: bold;
-            text-align:center;
-            span {
-                vertical-align:middle;
-            }
+  .checkbox {
+    margin-top:0px;
+
+    .bands {
+      display: -webkit-flex;
+      display: flex;
+      justify-content:space-between;
+      align-items:stretch;
+      padding: 0px;
+
+      .checked,
+      .unchecked {
+        margin:0;
+        z-index:2;
+      }
+      .unchecked {
+        .fa {
+          color: $myBlue;
         }
-        .btn {
-            width:90%;
-            text-decoration:none;
+      }
+      .checked {
+        .fa{
+          color: $myGreen;
         }
-        .char {
-            #padding: 0px;
+        .fa-check {
+          color:#ffffff;
         }
+      }
+
+      .checkedline,
+      .uncheckedline {
+        $line-width:($check-icon-size/10); 
+        /*------------------------------*/
+        //width:100%; //初回起動時のjsにて再定義
+        position:absolute;
+        top:$check-icon-size/2 - $line-width/2;        
+        border:$line-width solid;
+        z-index:1;
+      }
+      .checkedline {
+        right:$check-icon-size/2;
+        border-color:$myGreen;
+        -moz-transform-origin:100% 50%;
+	       -webkit-transform-origin:100% 50%;
+        -moz-transform: rotate(-90deg);        
+        -weblit-transform: rotate(-90deg);        
+      }
+      .uncheckedline {
+        left:$check-icon-size/2;
+        border-color:$myBlue;
+        -moz-transform-origin:0% 50%;
+	       -webkit-transform-origin:0% 50%;
+        -moz-transform: rotate(90deg);        
+        -weblit-transform: rotate(90deg);        
+      }
     }
+
+    &>* {
+      margin:0;
+      padding:0;
+    }
+
+    .btn {
+      border:2px solid  #ffffff;
+      line-height:100%;
+      width:80%;
+      color:#ffffff;
+      &.checked {
+        background-color:$myGreen;
+      }
+      &.unchecked {
+        background-color:$myBlue;
+      }
+      &.disabled {
+        margin-left:10%;
+        margin-right:10%;
+      }
+    }
+  }
 }
+
 body {
-    background-color:#ffffff;
-    font-size:16px;
+  background-color:color-background;
+  font-size:$font-size;
 }
 
 .jqplot-cursor-tooltip>span {
-    font-size:120%;
-    font-weight:bold;
-    color:#8080FF;
-    background:none repeat scroll 0 0 rgba(208, 208, 208, 0.8);
+  font-size:120%;
+  font-weight:bold;
+  color:#8080FF;
+  background:none repeat scroll 0 0 rgba(208, 208, 208, 0.8);
 }
 
 .jqplot-bubble-label {
-    font-size:0.6em;
-    color:#ffffff;
+  font-size:0.6em;
+  color:#ffffff;
 }
 
 .graph {
-    .msg {
-        vertical-align:top; 
-        padding:5px;
-    }
-    .xaxis {
-        padding-top:5px;
-    }
-    .yaxis {
-        padding-right:5px;
-        padding-left:0px;
-    }
-    .chart {
-        padding:0px;
-    }
+  .dummy {
+    padding:0px;
+    width:$arrow-size;
+  }
+  .xaxis {
+    margin-top:5px;
+    padding:0px;
+    height:$arrow-size;
+  }
+  .yaxis {
+    margin-right:5px;
+    padding:0px;
+    width:$arrow-size;
+  }
+  .chart {
+    padding:0px;
+  }
 }
 
 .applist {
-    .panel-heading {
-        background-color:$color-success;
-        color: #ffffff;
-    }
-    .panel-body {
-        font-size:80%;
-    }
+  .panel-heading {
+    background-color:$myGreen;
+    color: #ffffff;
+  }
+  .panel-body {
+    font-size:80%;
+  }
 }
+

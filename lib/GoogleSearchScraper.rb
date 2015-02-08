@@ -44,7 +44,7 @@ class GoogleSearchScraper
   end
 
   #検索結果の中で最も上位に現れたtargetのURLを返却
-  def extractFirstUrl(query, target="play.google.com") 
+  def extractFirstUrl(query, target="play.google.com/store/apps/details") 
 
     url = "http://www.google.com/search?num=100&ie=UTF-8&oe=UTF-8&hl=ja&q=%s" % CGI.escape(query)
 
@@ -94,7 +94,7 @@ class GoogleSearchScraper
     #ループの途中でreturnしなかったということは
     #検索結果に抽出対象のURLがなかったことを意味する
     raise NoUrlError
-      .new("キーアプリを見つけられませんでした・・・")
+      .new("検索したいアプリを見つけられませんでした・・・")
   end
 
 end

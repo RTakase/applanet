@@ -63,7 +63,7 @@ class GooglePlayScraper
       else 
         parsed.query += "&hl=ja"       
       end
-      
+
       #部品でurlを再構築
       url = parsed.to_s
 
@@ -141,7 +141,7 @@ class GooglePlayScraper
 
     #「類似のアプリ」と「このデベロッパーの他のアプリ」からなる長さ2のノードセット
     @document.search(".rec-cluster").each do |cluster|
-      if cluster.search("h1").inner_text == similarAppsRep        
+      if cluster.search("h1").inner_text.include?(similarAppsRep)
         simapps = cluster.search(".card").collect do |card|
           card.attribute("data-docid").value
         end   

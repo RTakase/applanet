@@ -1,7 +1,7 @@
 
 <div class="container-fluid">
   <div class="panel-group" id="applist" role="tablist">
-    <span> 似ているアプリ一覧 </span>
+    <div class="msg"> </div>
     <% simapps.each_with_index do |app, i| %>
       
       <% headingId = "h-" + app["packageid"].gsub(/\./, "-") %>

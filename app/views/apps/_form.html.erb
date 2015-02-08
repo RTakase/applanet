@@ -1,43 +1,51 @@
 
 <div class="container-fluid" id="input-app">     
 
-  <label for="input-appname">検索したいアプリ名</label>
-  <%= form_tag("/apps/load", remote: true, id: "inputapp", class: "form-inline") do %>
+  <div class="status">
+    検索したいアプリ名と基準を入力してください！
+  </div>
 
-    <!-- テキストフィールドと検索ボタンを一行に収めるためのグループ -->
-    <div class="form-group">
+  <!-- 入力欄 -->
+  <label for="input-appname">検索したいアプリ名</label>
+  <%= form_tag("/apps/load", remote: true, id: "inputapp") do %>
+
+    <div class="input-group">
       <input type="text" class="form-control" name="name" 
              id="input-appname" placeholder="e.g. angry bird"></input>
-      <input type="submit" class="btn btn-default" id="input-submit" name="commit" value="検索"></input>
+      <span class="input-group-btn">
+        <button type="submit" class="btn" id="input-submit" name="commit">検索</button>
+      </span>
+      <input type="hidden" id="crit-result" name="criteria" value=""></input>
     </div>
-
-    <input type="hidden" id="char-result" name="char" value=""></input>
   <% end %>
 
-  <div class="row chars">
+  <!-- チェックボックス風ボタンの説明箇所 -->
+  
+  <label style="margin:0;"> 似ている基準 </label>
 
-    <div class="col-md-2">
-      <span class="fa-stack emptybox">
-        <i class="fa fa-square-o fa-stack-2x pull-left"></i>
+  <div class="row checkbox">
+    <div class="col-md-12 bands">
+      <span class="fa-stack fa-lg unchecked">
+        <i class="fa fa-square fa-stack-2x"></i>
       </span>
-    </div>
-    <div class="col-md-8 checklabel">
-        <span> 似ている基準 </span>
-    </div>
-    <div class="col-md-2">
-      <span class="fa-stack checkbox pull-right">
-        <i class="fa fa-square-o fa-stack-2x"></i>
+
+      <div class="uncheckedline"></div>
+      <div class="checkedline"></div>
+
+      <span class="fa-stack fa-lg checked">
+        <i class="fa fa-square fa-stack-2x"></i>
         <i class="fa fa-check fa-stack-1x"></i>
       </span>
     </div>
 
+    <!-- チェックボックス風ボタン -->
     <% Applanet::Application.config.charInfo.each do |key, value| %>      
       <div class="col-md-12 char">
         <button type="button"
                 <% if Applanet::Application.config.showOnly.include?(key) %>
-                class="btn btn-primary pull-left disabled"
+                class="btn unchecked disabled"
                 <% else %>
-                class="btn btn-primary pull-left"
+                class="btn unchecked"
                 <% end %>
                 state= "up"
                 name= <%= key %>>
@@ -45,5 +53,16 @@
         </button>
       </div>
     <% end %>
+    <div class="col-md-12 bands">
+      <span class="fa-stack fa-lg unchecked">
+        <i class="fa fa-square fa-stack-2x"></i>
+      </span>
+
+      <span class="fa-stack fa-lg checked">
+        <i class="fa fa-square fa-stack-2x"></i>
+        <i class="fa fa-check fa-stack-1x"></i>
+      </span>
+    </div>
+    
   </div>
 </div>

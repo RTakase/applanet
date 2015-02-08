@@ -1,5 +1,9 @@
-$("#chart").hide();
-$(".xaxis").empty();
-$(".yaxis").empty();
-$("#applist").empty();
-$(".msg").html("<%= @message %>");
+//$("#chart").hide();
+//$(".xaxis").hide();
+//$(".yaxis").hide();
+//$("#applist").empty();
+$("#chart").empty();
+$("#chart").off(); //紐付けられた全イベントを解除
+$(".applist").hide();
+$(".graph").hide();
+$(".status").html("<%= @message %>");

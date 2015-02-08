@@ -1,0 +1,4 @@
+<%= render(:partial => 'applink', locals: {app: @app}) %> 
+<!-- <span class="fa fa-flag"></span> -->
+<span class="mark">谷</span>
+<span> と似ている<%= desc %> </span>

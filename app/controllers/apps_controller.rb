@@ -6,43 +6,55 @@ require "./lib/ImageHandler"
 require "levenshtein" #編集距離を計算してくれる
 require "statsample"
 
-class NoCharError < StandardError
+class NoCriteriaError < StandardError
+end
+class NoNameError < StandardError
 end
 
 class AppsController < ApplicationController
-
-  def covariance_matrix
-  end
 
   def error
   end
 
   def load
     begin 
-      if params[:char].blank?
-        raise NoCharError.new("基準はひとつ以上選んでください・・・");
+      if params[:criteria].blank?
+        raise NoCriteriaError.new("基準はひとつ以上選んでください・・・");
       else
         #チェックされている特徴量を抽出
-        @checked = params[:char].split(",");       
+        @checked = params[:criteria].split(",");       
+      end
+
+      if params[:name].blank?
+        raise NoNameError.new("アプリの名前を入力してください・・・");
+      else
+        query = params[:name] + " android";
       end
 
       #入力されたアプリのGoogle Play url
-      url = GoogleSearchScraper.new(params[:name]).url
+      url = GoogleSearchScraper.new(query).url
 
       #スクレイピング結果
       @app = GooglePlayScraper.new(url).app   
 
+      #それぞれの基準に対する特徴量名(DB内の名前)
+      criteriaTranslater = {
+        "title" => "title",
+        "icongeo" => "avehash",
+        "simapps" => "simapps"
+      }
+
       #それぞれの基準における特徴量
       charCalculator = {
         "title" => proc{|app| app["title"] },
-        "icongeo" => method(:calcAverageHash),
+        "avehash" => method(:calcAverageHash),
         "simapps" => proc{|app| app["simapps"]}
       }
 
       #それぞれの基準における距離
       diffCalculator = {
         "title" => method(:calcEditDistance),
-        "icongeo" => method(:calcHamingDistance),
+        "avehash" => method(:calcHamingDistance),
         "simapps" => method(:calcSetDifference)
       }
 
@@ -51,30 +63,44 @@ class AppsController < ApplicationController
         "title" => proc {|*args|
           args.max {|a,b| a.length <=> b.length}.length
         },#method(:getTitleMaxLength),
-        "icongeo" => proc{|*args| 64 },
+        "avehash" => proc{|*args| 64 },
         "simapps" => proc{|*args| 
           args.inject([]) {|m,v| m|v}.length
-          }
+        }
       }
 
-      #スクレイピング結果からチェックされた特徴量を計算しておく
+      #入力アプリがDBになければ登録しておこう（入力アプリを必ず検索結果の1位として表示するため）
+      unless AndroidApp.find_by(:packageid => @app["packageid"]) 
+        newone = @app
+        #スクレイピングだけではとれない情報を計算
+        diff = 
+          AndroidApp.attribute_names - @app.keys -
+          ["id", "created_at", "updated_at"]      
+        diff.each do |attr|
+          newone[attr] = charCalculator[attr].call(@app)          
+        end
+        AndroidApp.create(newone)
+      end       
+
+      #必要な特徴量を予め計算しておく
       act = Hash.new
-      @checked.each do |char|
-        act[char] = charCalculator[char].call(@app)
+      @checked.each do |crit|
+        char = criteriaTranslater[crit]
+        act[char] = charCalculator[char].call(@app)          
       end
 
-      #DB中の全アプリでループ
-      #@simapps = AndroidApp.take(10000).collect do |target|
+      #DB中のアプリでループ
+      #3@simapps = AndroidApp.take(20).collect do |target|
       @simapps = AndroidApp.all.collect do |target|
- 
+
         #上で計算しておいた特徴量とtargetの特徴量で類似度を計算
-        sim = @checked.collect do |char|
-          pssChar = charCalculator[char].call(target)
-          diff = diffCalculator[char].call(act[char], pssChar)
-          max = diffMax[char].call(act[char], pssChar)
+        sim = @checked.collect do |crit|
+          char = criteriaTranslater[crit]
+          diff = diffCalculator[char].call(act[char], target[char])
+          max = diffMax[char].call(act[char], target[char])
           (max - diff).to_f / max
         end
-        
+
         #三平方の定理よりキーアプリとの距離を算出
         dis = Math.sqrt(sim.inject(0) {|m, v| m += v*v })
 
@@ -97,7 +123,7 @@ class AppsController < ApplicationController
         AndroidApp.find_by(:packageid => app["packageid"])
       end
 
-      #主成分分析
+      #------------- 主成分分析 -------------#
       #https://github.com/clbustos/statsample
       if @simapps[0]["similarity"].length >= 3
         cov = covariance_matrix(@simapps)        
@@ -127,23 +153,24 @@ class AppsController < ApplicationController
           end          
         end
       end
+      #------------- 主成分分析おわり -------------#
 
     rescue OpenURI::HTTPError => ex.message
       @message = ex.message
       render action: :error
     rescue NoUrlError => ex
-      @message = ex.message
-      render action: :error
-    rescue NoKeywordError => ex
-      @message = ex.message
-      render action: :error     
-    rescue NoCharError => ex
+      @message = "検索したいアプリを見つけられませんでした・・・"
+      render action: :error    
+    rescue NoCriteriaError => ex
       @message = ex.message
       render action: :error   
-    # rescue => ex
-    #   #@message = "すみません何かがおかしいようです・・・"
-    #   @message = ex.message
-    #   render action: :error
+    rescue NoNameError => ex
+      @message = ex.message
+      render action: :error 
+      rescue => ex
+      @message = "すみませんもう一度ためしてみてください・・・"
+      @message = ex.message
+      render action: :error
     end
   end
 
@@ -155,11 +182,7 @@ class AppsController < ApplicationController
   end
 
   def calcAverageHash(app)
-    if app["avehash"].blank?
-      ImageHandler.new(app["iconurl"]).calcAverageHash
-    else
-      app["avehash"]
-    end
+    ImageHandler.new(app["iconurl"]).calcAverageHash
   end
 
   def calcEditDistance(actChar, pssChar)

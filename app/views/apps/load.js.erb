@@ -1,15 +1,58 @@
 
 var data = [];
 
-var plotRGB = "#2a612a";
-var plotARGB = "rgba(42, 97, 42, 0.8)"
+var myRed = "#922222";
+var myGreen = "#2a612a";
+var myTransGreen = "rgba(42, 97, 42, 0.8)"
 
 var simapps = <%= @simapps.to_json.html_safe %>;
 
-//var charInfo = <%= Applanet::Application.config.charInfo.to_json.html_safe %>;
+var link = 
+"<%= j render(:partial => 'applink', locals: {app: @app}) %>";
 
-//var checked = <%= @checked.to_json.html_safe %>
+var applist = 
+"<%= j render(:partial => 'applist', locals: { simapps: @simapps, dbapps:@dbapps}) %>";
 
+
+
+var option = {
+  gridPadding: 0,
+  seriesDefaults: {
+    renderer: $.jqplot.BubbleRenderer,
+    shadow: false,
+    rendererOptions: {
+      bubbleAlpha: 0.8,
+      varyBubbleColors: true,
+         showlabels: true
+    }
+  },
+  grid: {
+    gridLineColor: myGreen,
+    background: '#ffffff', 
+    borderColor: myGreen,  
+    borderWidth: 1.0       
+  },
+  axesDefaults: {
+    //showTicks: false
+  },
+  axes: {
+    xaxis: {
+      min:1,
+      max:0
+    },
+    yaxis: {
+      min:1,
+      max:0
+    }
+  },
+  cursor: {
+    show: true,
+    zoom: true,
+    showTooltip: false
+  }
+};
+
+var tooSimilar = 0;
 //表示するデータから必要な部分を抜き取る
 for (i = 0; i < simapps.length; i++) {
   var _data = [];
@@ -19,8 +62,19 @@ for (i = 0; i < simapps.length; i++) {
     _data[j] = 1.0 - sim[j];
   }
 
+  if (option.axes.xaxis.max < _data[0]) option.axes.xaxis.max = _data[0];
+  if (option.axes.xaxis.min > _data[0]) option.axes.xaxis.min = _data[0];
+
   //一次元のときのための補正
-  if (_data.length == 1) _data.push(_data[0]);
+  if (_data.length == 1) {
+    option.axes.yaxis.max = option.axes.xaxis.max;
+    option.axes.yaxis.min = option.axes.xaxis.min;
+    _data.push(_data[0]);
+  }
+  else {
+    if (option.axes.yaxis.max < _data[1]) option.axes.yaxis.max = _data[1];
+    if (option.axes.yaxis.min > _data[1]) option.axes.yaxis.min = _data[1];
+  }
 
   //円のサイズ
   _data.push(0.4 * simapps[i].distance);
@@ -39,49 +93,56 @@ for (i = 0; i < simapps.length; i++) {
     default:
       suffix = "th";
   }       
-  _data.push(""+(i+1)+suffix);
+  var label = (i == 0) ? "谷" : "" + (i+1) + suffix;
+  var color = (i == 0) ? myRed : myGreen;
+
+  _data.push({label: label, color: color});
 
   //タイトルとかと紐付けするためのパッケージID(jqplotの仕様外）
   _data.push(simapps[i].packageid);
 
   data.push(_data);
+
+  if (i != 0) {
+    if (simapps[i-1].distance - simapps[i].distance <= 0.02) tooSimilar++;
+  }
 }
 
-var option = {
-  gridPadding: 0,
-  seriesDefaults: {
-    color: plotARGB,
-    renderer: $.jqplot.BubbleRenderer,
-    shadow: false,
-    rendererOptions: {
-      bubbleAlpha: 0.7,
-      varyBubbleColors: false,
-         showlabels: true
-    }
-  },
-  grid: {
-    gridLineColor: plotRGB,    // *Color of the grid lines.
-    background: '#ffffff',      // CSS color spec for background color of grid.
-    borderColor: plotRGB,     // CSS color spec for border around grid.
-    borderWidth: 1.0           // pixel width of border around grid.
-  },
-  axesDefaults: {
-    showTicks: false
-  },
-  cursor: {
-    show: true,
-    zoom: true,
-    showTooltip: false
-  }
-};
+option.axes.xaxis.max += 0.1;
+option.axes.xaxis.min -= 0.1;
+option.axes.yaxis.max += 0.1;
+option.axes.yaxis.min -= 0.1;
 
-$("#chart").show();
-$("#chart").empty();
-$("#chart").off(); //紐付けられた全イベントを解除
+//表示！
+$(".status").html("検索できました！");
+if (tooSimilar > 5) {
+  $(".status").html($(".status").html() + "tips:似ているアプリが固まって現れています。別の基準を追加してはいかかでしょうか")
+};
+  
+$(".graph").show();
+$(".graph .msg").html("<%= j render(:partial => 'label', :locals => {:app => @app, :desc => "アプリのグラフ"}) %>"); 
+
 var plot = $.jqplot("chart", [data], option);
+
+$(".applist").show();
+$(".applist").html(applist);
+$(".applist .msg").html("<%= j render(:partial => 'label', :locals => {:app => @app, :desc => "アプリ一覧"}) %>"); 
+//一位の項目だけ赤くする
+var headingId = "h-" + simapps[0].packageid.replace(/\./g, "-");
+$("#" + headingId).css("background-color", myRed);
+
+$("#appdata").html("<%= j render(:partial => 'data') %>"); 
 
 //拡大した際にはみ出たバブル達を隠す（jqplotに報告してあげようかな）
 $(".jqplot-series-canvas").css({overflow: "hidden"});
+
+$(window).resize(function() {
+  console.log("hoge");
+  plot.replot();
+  //plot1.replot( { resetAxes: true } );
+});
+
+$(".yaxis").height($("#chart").height());
 
 //バブルがマウスオーバーされた際に対応するapplistを表示する
 //data[4]は上のほうで勝手に設定したパッケージID
@@ -92,8 +153,8 @@ $('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, d
 
 
 /*
-//バブルがマウスオーバーされたときにアプリの名前のツールチップを表示する
-$('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {
+   //バブルがマウスオーバーされたときにアプリの名前のツールチップを表示する
+   $('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, data, radius) {
 
    var simapps = <%= @simapps.to_json.html_safe %>;
 
@@ -108,24 +169,24 @@ $('#chart').bind('jqplotDataHighlight', function (ev, seriesIndex, pointIndex, d
 
    //ツールチップの中身をアプリの名前（バブルチャートのラベル）に指定
    //data[4]は上のほうで勝手に設定したパッケージID
-  var title = "";
-  for (i = 0; i < simapps.length; i++) {
-    if (data[4] == simapps[i].packageid) {
-      title = simapps[i].title;
-    }
-  }
+   var title = "";
+   for (i = 0; i < simapps.length; i++) {
+   if (data[4] == simapps[i].packageid) {
+   title = simapps[i].title;
+   }
+   }
 
-  $('.jqplot-cursor-tooltip')
+   $('.jqplot-cursor-tooltip')
    .html('<span>'+title+'</span>');
 
    $('.jqplot-cursor-tooltip').show();
-});
+   });
 
-$('#chart').bind('jqplotDataUnhighlight', function (ev, seriesIndex, pointIndex, data) {
-  $('.jqplot-cursor-tooltip').empty();
-  $('.jqplot-cursor-tooltip').hide();
-});
-*/
+   $('#chart').bind('jqplotDataUnhighlight', function (ev, seriesIndex, pointIndex, data) {
+   $('.jqplot-cursor-tooltip').empty();
+   $('.jqplot-cursor-tooltip').hide();
+   });
+ */
 
 //バブルがクリックされたときにそのアプリのウェブページに飛ばす
 //
@@ -137,7 +198,4 @@ $('#chart').bind('jqplotDataClick',　function (ev, seriesIndex, pointIndex, dat
   window.open(url);
 }); 
 
-//部分テンプレートを呼び出す
-$(".msg").html("検索できました！<%= j render(:partial => 'applink', locals:{app: @app}) %>");
-$("#appdata").html("<%= j render(:partial => 'data') %>");
-$(".applist").html ("<%= j render(:partial => 'applist', locals: { simapps: @simapps, dbapps:@dbapps}) %>");
+
